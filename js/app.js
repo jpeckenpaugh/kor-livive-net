@@ -1,6 +1,6 @@
 /**
  * Korean Language Buddy - Main Application Logic
- * Modules: LessonRepository, ProfileManager, SpeechAudio, AutoPlayEngine, QuizEngine, UIController
+ * Modules: LessonRepository, SpeechAudio, ProfileManager, ScenarioEngine, AutoPlayEngine, QuizEngine, UIController
  */
 
 (function () {
@@ -132,18 +132,7 @@
         };
 
         utterance.onend = () => triggerCallbackOnce();
-        utterance.onerror = (e) => {
-          // If canceled intentionally, onerror may fire
-          triggerCallbackOnce();
-        };
-
-        // Safety fallback timer in case speech synthesis engine hangs or onend fails to fire
-        const estimatedDurationMs = Math.max(1200, (text.length * 180) + 800);
-        setTimeout(() => {
-          if (!callbackFired && window.speechSynthesis.speaking) {
-            // still speaking or hung
-          }
-        }, estimatedDurationMs);
+        utterance.onerror = () => triggerCallbackOnce();
 
         window.speechSynthesis.speak(utterance);
       } catch (err) {
@@ -215,7 +204,7 @@
         avatar: cleanAvatar,
         createdAt: Date.now(),
         stars: 0,
-        lessonProgress: {} // [lessonId]: { status: 'untouched'|'started'|'completed', cardsViewed: [], quizPassed: boolean, quizStreak: number }
+        lessonProgress: {}
       };
       this.data.profiles.push(newProfile);
       this.data.activeProfileId = newProfile.id;
@@ -250,28 +239,79 @@
       return true;
     },
 
-    recordCardView: function (lessonId, wordIndex) {
-      const profile = this.getActiveProfile();
-      if (!profile) return;
-
+    ensureLessonEntry: function (profile, lessonId) {
       if (!profile.lessonProgress[lessonId]) {
         profile.lessonProgress[lessonId] = {
           status: 'started',
-          cardsViewed: [wordIndex],
-          quizStreak: 0,
+          cardsViewed: [],
+          scenarioCompleted: false,
+          scenarioStars: 0,
+          quizStars: 0,
           quizPassed: false,
           stars: 0,
           highScore: 0
         };
+      }
+      const prog = profile.lessonProgress[lessonId];
+      if (typeof prog.scenarioCompleted !== 'boolean') prog.scenarioCompleted = false;
+      if (typeof prog.scenarioStars !== 'number') prog.scenarioStars = 0;
+      if (typeof prog.quizStars !== 'number') prog.quizStars = 0;
+      if (typeof prog.stars !== 'number') prog.stars = 0;
+      return prog;
+    },
+
+    recalculateProfileStars: function (profile) {
+      let sumStars = 0;
+      Object.keys(profile.lessonProgress).forEach(id => {
+        const prog = profile.lessonProgress[id];
+        const scStars = prog.scenarioStars || (prog.scenarioCompleted ? 1 : 0);
+        const qzStars = prog.quizStars || 0;
+        prog.stars = Math.min(3, scStars + qzStars);
+        sumStars += prog.stars;
+      });
+      profile.stars = sumStars;
+    },
+
+    recordScenarioCompletion: function (lessonId) {
+      const profile = this.getActiveProfile();
+      if (!profile) return { isNew: false, lessonStars: 0, totalStars: 0 };
+
+      const prog = this.ensureLessonEntry(profile, lessonId);
+      let isNew = false;
+
+      if (!prog.scenarioCompleted) {
+        prog.scenarioCompleted = true;
+        prog.scenarioStars = 1;
+        isNew = true;
       } else {
-        const prog = profile.lessonProgress[lessonId];
-        if (!prog.cardsViewed) prog.cardsViewed = [];
-        if (!prog.cardsViewed.includes(wordIndex)) {
-          prog.cardsViewed.push(wordIndex);
-        }
-        if (prog.status === 'untouched' || prog.status === 'new') {
-          prog.status = 'started';
-        }
+        prog.scenarioStars = 1;
+      }
+
+      if (prog.status === 'untouched' || prog.status === 'new') {
+        prog.status = 'started';
+      }
+
+      this.recalculateProfileStars(profile);
+      this.save();
+
+      return {
+        isNew,
+        lessonStars: prog.stars,
+        totalStars: profile.stars
+      };
+    },
+
+    recordCardView: function (lessonId, wordIndex) {
+      const profile = this.getActiveProfile();
+      if (!profile) return;
+
+      const prog = this.ensureLessonEntry(profile, lessonId);
+      if (!prog.cardsViewed) prog.cardsViewed = [];
+      if (!prog.cardsViewed.includes(wordIndex)) {
+        prog.cardsViewed.push(wordIndex);
+      }
+      if (prog.status === 'untouched' || prog.status === 'new') {
+        prog.status = 'started';
       }
       this.save();
     },
@@ -289,60 +329,37 @@
         };
       }
 
-      // Calculate round stars: 5/5 = 3 stars, 3-4 = 2 stars, 1-2 = 1 star, 0 = 0
-      let starsAwarded = 0;
+      // Quiz awards up to 2 stars: score >= 5 => 2 stars, score >= 3 => 1 star
+      let quizStarsAwarded = 0;
       if (score >= 5) {
-        starsAwarded = 3;
+        quizStarsAwarded = 2;
       } else if (score >= 3) {
-        starsAwarded = 2;
-      } else if (score >= 1) {
-        starsAwarded = 1;
+        quizStarsAwarded = 1;
       }
 
-      if (!profile.lessonProgress[lessonId]) {
-        profile.lessonProgress[lessonId] = {
-          status: 'started',
-          cardsViewed: [],
-          quizStreak: score,
-          quizPassed: score >= 3,
-          stars: 0,
-          highScore: 0
-        };
-      }
+      const prog = this.ensureLessonEntry(profile, lessonId);
 
-      const prog = profile.lessonProgress[lessonId];
-      if (typeof prog.stars !== 'number') prog.stars = 0;
-      if (typeof prog.highScore !== 'number') prog.highScore = 0;
-
-      // Update highest score and per-lesson stars
       if (score > prog.highScore) {
         prog.highScore = score;
       }
-      if (starsAwarded > prog.stars) {
-        prog.stars = starsAwarded;
+      if (quizStarsAwarded > prog.quizStars) {
+        prog.quizStars = quizStarsAwarded;
       }
 
       let isNewlyCompleted = false;
-      // Mark completed if at least 3 correct or 2+ stars earned
       if (score >= 3 && prog.status !== 'completed') {
         prog.status = 'completed';
         prog.quizPassed = true;
         isNewlyCompleted = true;
       }
 
-      // Recalculate global profile stars from all lessons (ensuring consistency)
-      let sumStars = 0;
-      Object.keys(profile.lessonProgress).forEach(id => {
-        sumStars += (profile.lessonProgress[id].stars || 0);
-      });
-      profile.stars = sumStars;
-
+      this.recalculateProfileStars(profile);
       this.save();
 
       return {
         roundScore: score,
         totalQuestions: totalQuestions,
-        starsAwarded: starsAwarded,
+        starsAwarded: quizStarsAwarded,
         lessonStars: prog.stars,
         totalStars: profile.stars,
         isNewlyCompleted: isNewlyCompleted
@@ -357,6 +374,14 @@
       return profile.lessonProgress[lessonId].stars || 0;
     },
 
+    isScenarioCompleted: function (lessonId) {
+      const profile = this.getActiveProfile();
+      if (!profile || !profile.lessonProgress[lessonId]) {
+        return false;
+      }
+      return !!profile.lessonProgress[lessonId].scenarioCompleted;
+    },
+
     getLessonStatus: function (lessonId) {
       const profile = this.getActiveProfile();
       if (!profile || !profile.lessonProgress[lessonId]) {
@@ -367,7 +392,246 @@
   };
 
   /* ==========================================================================
-     3. AUTO-PLAY ENGINE
+     3. SCENARIO ENGINE (PRIMARY SITUATIONAL LEARNER JOURNEY)
+     ========================================================================== */
+  const ScenarioEngine = {
+    currentLesson: null,
+    currentTurnIndex: 0,
+    turns: [],
+    selectedOption: null,
+
+    initScenario: function (lesson) {
+      this.currentLesson = lesson;
+      this.selectedOption = null;
+
+      const stage = document.getElementById('scenario-stage');
+      const completionCard = document.getElementById('scenario-completion-card');
+      const arena = document.getElementById('dialogue-arena');
+      const feedbackCard = document.getElementById('etiquette-feedback-card');
+
+      if (stage) stage.style.display = 'flex';
+      if (completionCard) completionCard.style.display = 'none';
+      if (arena) arena.style.display = 'flex';
+      if (feedbackCard) feedbackCard.style.display = 'none';
+
+      // Setting location and context
+      const locText = document.getElementById('scene-location-text');
+      const ctxText = document.getElementById('scene-context-text');
+
+      if (lesson.scene) {
+        if (locText) locText.textContent = `${lesson.scene.illustration || '📍'} ${lesson.scene.location || 'Scene'}`;
+        if (ctxText) ctxText.textContent = lesson.scene.context || '';
+      } else {
+        if (locText) locText.textContent = `${lesson.icon || '📍'} ${lesson.title}`;
+        if (ctxText) ctxText.textContent = lesson.description || '';
+      }
+
+      if (lesson.characters && lesson.characters.npc) {
+        const npcAvatar = document.getElementById('npc-avatar');
+        const npcName = document.getElementById('npc-name');
+        if (npcAvatar) npcAvatar.textContent = lesson.characters.npc.avatar || '👩‍🏫';
+        if (npcName) npcName.textContent = lesson.characters.npc.name || 'Conversation Partner';
+      }
+
+      // Load scenario turns
+      if (lesson.scenario && Array.isArray(lesson.scenario.turns) && lesson.scenario.turns.length > 0) {
+        this.turns = lesson.scenario.turns;
+        this.currentTurnIndex = 0;
+        this.presentTurn(0);
+      } else {
+        // Fallback scenario for lessons without explicit scenario schema yet
+        this.buildFallbackScenario(lesson);
+      }
+    },
+
+    buildFallbackScenario: function (lesson) {
+      const firstWord = lesson.words[0];
+      const secondWord = lesson.words[1] || lesson.words[0];
+
+      this.turns = [
+        {
+          id: 'fallback-turn-1',
+          speaker: 'partner',
+          speech: {
+            korean: firstWord.korean,
+            phonetic: firstWord.phonetic,
+            english: firstWord.english
+          },
+          prompt: `How do you express: "${secondWord.english}"?`,
+          options: [
+            {
+              id: 'fb-opt-1',
+              korean: secondWord.korean,
+              phonetic: secondWord.phonetic,
+              english: secondWord.english,
+              isCorrect: true,
+              feedback: {
+                title: 'Spot on! 🌟',
+                explanation: secondWord.fact || 'Great choice!',
+                socialNuance: 'Use this naturally in conversation!'
+              },
+              nextTurnId: 'turn-complete'
+            },
+            {
+              id: 'fb-opt-2',
+              korean: (lesson.words[2] || lesson.words[0]).korean,
+              phonetic: (lesson.words[2] || lesson.words[0]).phonetic,
+              english: (lesson.words[2] || lesson.words[0]).english,
+              isCorrect: false,
+              feedback: {
+                title: 'Try again! 🌱',
+                explanation: `That means "${(lesson.words[2] || lesson.words[0]).english}".`,
+                socialNuance: 'Give it another look!'
+              },
+              nextTurnId: null
+            }
+          ]
+        }
+      ];
+      this.currentTurnIndex = 0;
+      this.presentTurn(0);
+    },
+
+    presentTurn: function (index) {
+      if (index >= this.turns.length) {
+        this.finishScenario();
+        return;
+      }
+
+      this.currentTurnIndex = index;
+      const turn = this.turns[index];
+
+      // Update turn counter
+      const counter = document.getElementById('scene-turn-counter');
+      if (counter) {
+        counter.textContent = `Dialogue Turn ${index + 1} of ${this.turns.length}`;
+      }
+
+      // Update NPC speech
+      const speechKr = document.getElementById('npc-speech-kr');
+      const speechPhonetic = document.getElementById('npc-speech-phonetic');
+      const speechEn = document.getElementById('npc-speech-en');
+      const audioBtn = document.getElementById('scenario-audio-btn');
+
+      if (speechKr) speechKr.textContent = turn.speech.korean;
+      if (speechPhonetic) speechPhonetic.textContent = turn.speech.phonetic;
+      if (speechEn) speechEn.textContent = turn.speech.english;
+
+      if (audioBtn) {
+        audioBtn.onclick = () => {
+          SpeechAudio.speak(turn.speech.korean, 'ko-KR');
+        };
+      }
+
+      // Automatically speak the NPC greeting softly
+      SpeechAudio.speak(turn.speech.korean, 'ko-KR');
+
+      // Update prompt
+      const promptText = document.getElementById('scenario-prompt-text');
+      if (promptText) {
+        promptText.textContent = turn.prompt;
+      }
+
+      // Render options
+      const grid = document.getElementById('scenario-options-grid');
+      const feedbackCard = document.getElementById('etiquette-feedback-card');
+      if (feedbackCard) feedbackCard.style.display = 'none';
+
+      if (grid) {
+        grid.innerHTML = '';
+        turn.options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'scenario-option-btn';
+          btn.innerHTML = `
+            <div class="option-kr-col">
+              <span class="option-kr">${opt.korean}</span>
+              <span class="option-phonetic">${opt.phonetic}</span>
+            </div>
+            <span class="option-en-label">${opt.english}</span>
+          `;
+          btn.onclick = () => this.handleOptionSelect(opt, btn, turn);
+          grid.appendChild(btn);
+        });
+      }
+    },
+
+    handleOptionSelect: function (opt, btnElement, turn) {
+      const feedbackCard = document.getElementById('etiquette-feedback-card');
+      const feedbackTitle = document.getElementById('etiquette-title');
+      const feedbackExp = document.getElementById('etiquette-explanation');
+      const feedbackNuance = document.getElementById('etiquette-nuance');
+      const continueBtn = document.getElementById('etiquette-continue-btn');
+
+      if (!feedbackCard) return;
+
+      // Speak chosen phrase
+      SpeechAudio.speak(opt.korean, 'ko-KR');
+
+      if (opt.isCorrect) {
+        btnElement.classList.add('correct');
+        // Disable other buttons
+        document.querySelectorAll('.scenario-option-btn').forEach(b => (b.disabled = true));
+
+        feedbackCard.className = 'etiquette-feedback-card correct';
+        feedbackTitle.textContent = opt.feedback.title || 'Spot on! 🌟';
+        feedbackExp.textContent = opt.feedback.explanation || '';
+        feedbackNuance.textContent = `💡 Etiquette tip: ${opt.feedback.socialNuance || 'Great polite phrase!'}`;
+        feedbackCard.style.display = 'flex';
+
+        continueBtn.style.display = 'inline-flex';
+        continueBtn.onclick = () => {
+          this.presentTurn(this.currentTurnIndex + 1);
+        };
+      } else {
+        // Shake button for instant gentle retry
+        btnElement.classList.add('wrong-shake');
+        setTimeout(() => {
+          btnElement.classList.remove('wrong-shake');
+        }, 500);
+
+        feedbackCard.className = 'etiquette-feedback-card incorrect';
+        feedbackTitle.textContent = opt.feedback.title || 'Too casual or not quite! ⚠️';
+        feedbackExp.textContent = opt.feedback.explanation || '';
+        feedbackNuance.textContent = `💡 Etiquette tip: ${opt.feedback.socialNuance || 'Notice the politeness level!'}`;
+        feedbackCard.style.display = 'flex';
+        continueBtn.style.display = 'none'; // keep learner in choice state to retry
+      }
+    },
+
+    finishScenario: function () {
+      const arena = document.getElementById('dialogue-arena');
+      const completionCard = document.getElementById('scenario-completion-card');
+      const feedbackCard = document.getElementById('etiquette-feedback-card');
+
+      if (arena) arena.style.display = 'none';
+      if (feedbackCard) feedbackCard.style.display = 'none';
+      if (completionCard) completionCard.style.display = 'flex';
+
+      const lesson = this.currentLesson;
+      const completion = lesson.scenario ? lesson.scenario.completion : null;
+
+      const badge = document.getElementById('scenario-badge');
+      const title = document.getElementById('scenario-completion-title');
+      const summary = document.getElementById('scenario-completion-summary');
+      const rewardPill = document.getElementById('scenario-reward-pill');
+
+      if (badge) badge.textContent = completion ? completion.badge : '🏆';
+      if (title) title.textContent = completion ? completion.title : 'Scenario Accomplished!';
+      if (summary) summary.textContent = completion ? completion.summary : 'You completed the conversational exchange!';
+      if (rewardPill) rewardPill.textContent = completion ? completion.rewardText : '⭐ 1 Star Earned in this Lesson!';
+
+      // Record scenario completion and award star in ProfileManager
+      ProfileManager.recordScenarioCompletion(lesson.id);
+
+      UIController.updateHeaderProfile();
+      UIController.updateSidebarLessons();
+      UIController.updateLessonHeroStars(lesson.id);
+    }
+  };
+
+  /* ==========================================================================
+     4. AUTO-PLAY ENGINE
      ========================================================================== */
   const AutoPlayEngine = {
     isPlaying: false,
@@ -444,13 +708,11 @@
                 const isLastWord = UIController.currentWordIndex >= lesson.words.length - 1;
 
                 if (isLastWord) {
-                  // End of lesson reached
                   this.stop();
                   UIController.setCardFlipped(false);
                   UIController.showToast('🎉 Awesome! You completed all cards in this lesson!');
                 } else {
-                  // Advance to next word (unflipped) and continue cycle
-                  UIController.nextCard(false); // don't flip yet
+                  UIController.nextCard(false);
                   this.timerId = setTimeout(() => {
                     this.playCurrentCard();
                   }, 400);
@@ -464,7 +726,7 @@
   };
 
   /* ==========================================================================
-     4. QUIZ ENGINE
+     5. QUIZ ENGINE
      ========================================================================== */
   const QuizEngine = {
     currentLessonId: null,
@@ -481,14 +743,11 @@
       this.questionIndex = 0;
       this.isSubmitting = false;
 
-      // Ensure quiz question view is visible and results view hidden
       UIController.showQuizQuestionView();
 
-      // Build 5 randomized questions from lesson words
       const words = [...lesson.words];
       words.sort(() => 0.5 - Math.random());
 
-      // If lesson has fewer words than 5, repeat or use what's available
       let questionList = words.slice(0, 5);
       if (questionList.length < 5 && words.length > 0) {
         while (questionList.length < 5) {
@@ -519,7 +778,6 @@
         if (w.english !== targetWord.english) pool.push(w.english);
       });
 
-      // If pool is small, supplement from all lessons in curriculum
       const allLessons = LessonRepository.getAll();
       if (pool.length < 3 && allLessons.length > 0) {
         allLessons.forEach(les => {
@@ -531,7 +789,6 @@
         });
       }
 
-      // Shuffle pool and pick 3
       pool.sort(() => 0.5 - Math.random());
       const distractors = pool.slice(0, 3);
 
@@ -594,25 +851,24 @@
 
       UIController.updateHeaderProfile();
       UIController.updateSidebarLessons();
-      UIController.updateLessonBannerStars(lesson.id);
+      UIController.updateLessonHeroStars(lesson.id);
       UIController.renderQuizResults(results, lesson);
     }
   };
 
   /* ==========================================================================
-     5. UI CONTROLLER & APP ORCHESTRATION
+     6. UI CONTROLLER & APP ORCHESTRATION
      ========================================================================== */
   const UIController = {
     currentLessonIndex: 0,
     currentWordIndex: 0,
-    activeTab: 'cards', // 'cards' | 'quiz' | 'all'
+    activeTab: 'scenario', // Default primary view is 'scenario'
     selectedAvatar: DEFAULT_AVATARS[0],
 
     init: async function () {
       SpeechAudio.init();
       this.bindEvents();
 
-      // Load curriculum data from JSON with fallback
       await LessonRepository.load();
 
       const hasProfiles = ProfileManager.init();
@@ -625,19 +881,29 @@
     },
 
     bindEvents: function () {
-      // Mobile Drawer Toggle
-      const drawerBtn = document.getElementById('mobile-drawer-toggle');
-      const sidebar = document.getElementById('sidebar-nav');
+      // Universal Slide-Out Drawer Toggle
+      const drawerBtn = document.getElementById('drawer-toggle-btn');
+      const drawerCloseBtn = document.getElementById('drawer-close-btn');
+      const drawer = document.getElementById('sidebar-nav');
       const backdrop = document.getElementById('sidebar-backdrop');
 
-      if (drawerBtn && sidebar && backdrop) {
-        const toggleDrawer = () => {
-          sidebar.classList.toggle('open');
+      const toggleDrawer = () => {
+        if (drawer && backdrop) {
+          drawer.classList.toggle('open');
           backdrop.classList.toggle('open');
-        };
-        drawerBtn.addEventListener('click', toggleDrawer);
-        backdrop.addEventListener('click', toggleDrawer);
-      }
+        }
+      };
+
+      const closeDrawer = () => {
+        if (drawer && backdrop) {
+          drawer.classList.remove('open');
+          backdrop.classList.remove('open');
+        }
+      };
+
+      if (drawerBtn) drawerBtn.addEventListener('click', toggleDrawer);
+      if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
+      if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
       // Profile Pill Click -> Switcher Modal
       const profilePill = document.getElementById('profile-pill-btn');
@@ -697,7 +963,6 @@
       const card = document.getElementById('flashcard');
       if (card) {
         card.addEventListener('click', (e) => {
-          // If clicking an inner interactive audio button, avoid double toggling
           if (e.target.closest('#card-audio-en-btn')) {
             return;
           }
@@ -720,7 +985,7 @@
         });
       }
 
-      // Navigation Buttons
+      // Flashcard Navigation Buttons
       const nextBtn = document.getElementById('card-next-btn');
       const prevBtn = document.getElementById('card-prev-btn');
       const audioBtn = document.getElementById('card-audio-btn');
@@ -757,7 +1022,7 @@
         });
       }
 
-      // Tabs
+      // Secondary Study Mode Tabs
       const tabBtns = document.querySelectorAll('.mode-tabs .tab-btn');
       tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -766,7 +1031,7 @@
         });
       });
 
-      // Window blur & Visibility change: safely stop auto-play and audio
+      // Window blur & Visibility change
       document.addEventListener('visibilitychange', () => {
         if (document.hidden && AutoPlayEngine.isPlaying) {
           AutoPlayEngine.stop();
@@ -778,7 +1043,7 @@
         }
       });
 
-      // Keyboard navigation (Left/Right arrows, Spacebar flip)
+      // Keyboard navigation
       window.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
         if (this.activeTab === 'cards') {
@@ -820,6 +1085,31 @@
           this.switchTab('cards');
         });
       }
+
+      // Scenario Completion Card Actions
+      const scenarioTryQuizBtn = document.getElementById('scenario-try-quiz-btn');
+      if (scenarioTryQuizBtn) {
+        scenarioTryQuizBtn.addEventListener('click', () => {
+          this.switchTab('quiz');
+        });
+      }
+
+      const scenarioReplayBtn = document.getElementById('scenario-replay-btn');
+      if (scenarioReplayBtn) {
+        scenarioReplayBtn.addEventListener('click', () => {
+          const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+          if (lesson) {
+            ScenarioEngine.initScenario(lesson);
+          }
+        });
+      }
+
+      const scenarioStudyCardsBtn = document.getElementById('scenario-study-cards-btn');
+      if (scenarioStudyCardsBtn) {
+        scenarioStudyCardsBtn.addEventListener('click', () => {
+          this.switchTab('cards');
+        });
+      }
     },
 
     loadLesson: function (lessonIndex) {
@@ -831,41 +1121,37 @@
       this.currentLessonIndex = lessonIndex;
       this.currentWordIndex = 0;
 
-      // Update banner
-      const numElem = document.getElementById('lesson-banner-number');
-      const titleElem = document.getElementById('lesson-banner-title');
-      const catElem = document.getElementById('lesson-banner-category');
-      const descElem = document.getElementById('lesson-banner-desc');
-      const badgeElem = document.getElementById('lesson-banner-status-badge');
-
-      if (numElem) numElem.textContent = `Lesson ${lesson.number}`;
-      if (titleElem) titleElem.textContent = `${lesson.icon} ${lesson.title}`;
-      if (catElem) catElem.textContent = lesson.category;
-      if (descElem) descElem.textContent = lesson.description;
-
-      const status = ProfileManager.getLessonStatus(lesson.id);
-      if (badgeElem) {
-        badgeElem.className = `status-badge ${status}`;
-        badgeElem.textContent = this.formatStatusLabel(status);
+      // Update Top Drawer Trigger Pill
+      const pillLabel = document.getElementById('current-lesson-pill-label');
+      if (pillLabel) {
+        pillLabel.textContent = `${lesson.number}. ${lesson.goal ? lesson.goal.slice(0, 22) + (lesson.goal.length > 22 ? '…' : '') : lesson.title}`;
       }
 
-      this.updateLessonBannerStars(lesson.id);
+      // Update Hero Bar
+      const goalElem = document.getElementById('lesson-hero-goal');
+      const titleElem = document.getElementById('lesson-hero-title');
 
-      // Render views
+      if (goalElem) goalElem.textContent = lesson.goal || lesson.category;
+      if (titleElem) titleElem.textContent = `${lesson.icon} ${lesson.title}`;
+
+      this.updateLessonHeroStars(lesson.id);
+
+      // Render primary scenario engine
+      ScenarioEngine.initScenario(lesson);
+
+      // Render other views
       this.updateCardView();
       this.renderVocabGrid(lesson);
       this.updateSidebarLessons();
 
-      // If active tab is quiz, initialize quiz
-      if (this.activeTab === 'quiz') {
-        QuizEngine.initQuiz(lesson);
-      }
+      // Switch to scenario tab by default
+      this.switchTab(this.activeTab || 'scenario');
 
-      // Close mobile drawer if open
-      const sidebar = document.getElementById('sidebar-nav');
+      // Close drawer if open
+      const drawer = document.getElementById('sidebar-nav');
       const backdrop = document.getElementById('sidebar-backdrop');
-      if (sidebar && sidebar.classList.contains('open')) {
-        sidebar.classList.remove('open');
+      if (drawer && drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
         backdrop.classList.remove('open');
       }
     },
@@ -874,17 +1160,16 @@
       const totalLessons = LessonRepository.count();
       if (this.currentLessonIndex + 1 < totalLessons) {
         this.loadLesson(this.currentLessonIndex + 1);
-        this.switchTab('cards');
+        this.switchTab('scenario');
         this.showToast(`Ready for Lesson ${this.currentLessonIndex + 1}! Let's go! 🚀`);
       } else {
-        // Last lesson reached: wrap around to Lesson 1 or congratulate
         this.loadLesson(0);
-        this.switchTab('cards');
+        this.switchTab('scenario');
         this.showToast('🎉 You completed the curriculum! Starting review at Lesson 1!');
       }
     },
 
-    updateLessonBannerStars: function (lessonId) {
+    updateLessonHeroStars: function (lessonId) {
       const starsElem = document.getElementById('lesson-banner-stars');
       if (!starsElem) return;
       const lessonStars = ProfileManager.getLessonStars(lessonId);
@@ -901,7 +1186,6 @@
       const card = document.getElementById('flashcard');
       if (card) card.classList.remove('is-flipped');
 
-      // Update Front
       const frontEmoji = document.getElementById('card-front-emoji');
       const backEmoji = document.getElementById('card-back-emoji');
       const koreanText = document.getElementById('card-korean-text');
@@ -916,7 +1200,6 @@
       if (englishText) englishText.textContent = word.english;
       if (factText) factText.textContent = `💡 ${word.fact}`;
 
-      // Update Progress
       const progressFill = document.getElementById('card-progress-fill');
       const counterText = document.getElementById('card-counter-label');
       const percent = ((this.currentWordIndex + 1) / lesson.words.length) * 100;
@@ -924,7 +1207,6 @@
       if (progressFill) progressFill.style.width = `${percent}%`;
       if (counterText) counterText.textContent = `Word ${this.currentWordIndex + 1} of ${lesson.words.length}`;
 
-      // Track card view in ProfileManager
       ProfileManager.recordCardView(lesson.id, this.currentWordIndex);
       this.updateSidebarLessons();
     },
@@ -994,18 +1276,21 @@
     },
 
     switchTab: function (tabId) {
-      // Always stop active auto-play when switching views
       AutoPlayEngine.stop();
-
       this.activeTab = tabId;
 
       document.querySelectorAll('.mode-tabs .tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+        const isCurrent = btn.getAttribute('data-tab') === tabId;
+        btn.classList.toggle('active', isCurrent);
+        btn.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
       });
 
       document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
 
-      if (tabId === 'cards') {
+      if (tabId === 'scenario') {
+        const scenarioView = document.getElementById('scenario-view');
+        if (scenarioView) scenarioView.classList.add('active');
+      } else if (tabId === 'cards') {
         const cardsView = document.getElementById('cards-view');
         if (cardsView) cardsView.classList.add('active');
         this.updateCardView();
@@ -1070,7 +1355,6 @@
         });
       }
 
-      // Quiz Sound Button
       const quizSoundBtn = document.getElementById('quiz-sound-mini');
       if (quizSoundBtn) {
         quizSoundBtn.onclick = () => SpeechAudio.speak(word.korean, 'ko-KR');
@@ -1083,7 +1367,6 @@
       if (qContainer) qContainer.style.display = 'none';
       if (rContainer) rContainer.style.display = 'block';
 
-      // Fill stats
       const scoreElem = document.getElementById('quiz-result-score');
       const starsElem = document.getElementById('quiz-result-stars');
       const totalStarsElem = document.getElementById('quiz-result-total-stars');
@@ -1097,18 +1380,16 @@
         ? '⭐'.repeat(results.starsAwarded) 
         : 'Keep practicing! 💪';
       if (starsElem) starsElem.textContent = starsIcons;
-
       if (totalStarsElem) totalStarsElem.textContent = `⭐ ${results.totalStars}`;
 
-      // Celebration tone based on performance
       if (results.roundScore === results.totalQuestions) {
         if (badgeElem) badgeElem.textContent = '🏆';
         if (titleElem) titleElem.textContent = 'Perfect Score! 🌟';
-        if (subElem) subElem.textContent = `Flawless mastery of ${lesson.title}! You earned 3 Stars!`;
+        if (subElem) subElem.textContent = `Flawless mastery of ${lesson.title}! You earned 2 Quiz Stars!`;
       } else if (results.roundScore >= 3) {
         if (badgeElem) badgeElem.textContent = '🎉';
         if (titleElem) titleElem.textContent = 'Great Job! 👏';
-        if (subElem) subElem.textContent = `You know most of these words! You earned ${results.starsAwarded} Stars!`;
+        if (subElem) subElem.textContent = `You know most of these words! You earned ${results.starsAwarded} Star!`;
       } else {
         if (badgeElem) badgeElem.textContent = '🌱';
         if (titleElem) titleElem.textContent = 'Good Practice! 💪';
@@ -1241,7 +1522,6 @@
         listContainer.appendChild(row);
       });
 
-      // Hook new profile button in switcher
       const newProfileBtn = document.getElementById('open-create-profile-btn');
       if (newProfileBtn) {
         newProfileBtn.onclick = () => {
@@ -1271,11 +1551,11 @@
     }
   };
 
-  // Expose to window for inline onclick handlers if needed
   window.App = {
     LessonRepository,
     UIController,
     ProfileManager,
+    ScenarioEngine,
     SpeechAudio,
     AutoPlayEngine,
     QuizEngine

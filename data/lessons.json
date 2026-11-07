@@ -36,11 +36,11 @@
         "fact": "A polite way to decline or disagree without sounding harsh."
       },
       {
-        "korean": "맛있어요",
-        "phonetic": "Ma-si-sseo-yo",
-        "english": "Delicious / Yum",
-        "emoji": "😋",
-        "fact": "Say this when enjoying a tasty meal or snack—cooks love hearing it!"
+        "korean": "반갑습니다",
+        "phonetic": "Ban-gap-seum-ni-da",
+        "english": "Nice to meet you / Glad to see you",
+        "emoji": "🤝",
+        "fact": "A warm, polite expression used when meeting someone or greeting an acquaintance."
       },
       {
         "korean": "안녕히 가세요",
@@ -49,7 +49,139 @@
         "emoji": "🏃",
         "fact": "Say this to someone who is leaving when you are staying."
       }
-    ]
+    ],
+    "goal": "Greet someone politely at school",
+    "scene": {
+      "location": "Classroom Door",
+      "backgroundTheme": "school-morning",
+      "illustration": "🏫",
+      "context": "You arrived at the classroom entrance. Your teacher, Teacher Park (박 선생님), looks up and welcomes you!"
+    },
+    "characters": {
+      "npc": {
+        "id": "teacher_park",
+        "name": "Teacher Park (박 선생님)",
+        "role": "Teacher",
+        "avatar": "👩‍🏫",
+        "relationshipLevel": "polite_formal"
+      },
+      "learner": {
+        "role": "Student"
+      }
+    },
+    "scenario": {
+      "initialTurnId": "turn-1",
+      "turns": [
+        {
+          "id": "turn-1",
+          "speaker": "teacher_park",
+          "speech": {
+            "korean": "좋은 아침이에요! 안녕하세요!",
+            "phonetic": "Jo-eun a-chim-i-e-yo! An-nyeong-ha-se-yo!",
+            "english": "Good morning! Hello!"
+          },
+          "prompt": "How do you greet your teacher respectfully?",
+          "options": [
+            {
+              "id": "opt-1a",
+              "korean": "안녕하세요!",
+              "phonetic": "An-nyeong-ha-se-yo!",
+              "english": "Hello! (Polite)",
+              "isCorrect": true,
+              "feedback": {
+                "title": "Spot on! 🌟",
+                "explanation": "안녕하세요 is the proper polite greeting (존댓말) for teachers, elders, and new acquaintances.",
+                "socialNuance": "Give a gentle head nod or slight bow as you say it!"
+              },
+              "nextTurnId": "turn-2"
+            },
+            {
+              "id": "opt-1b",
+              "korean": "안녕!",
+              "phonetic": "An-nyeong!",
+              "english": "Hey! / Hi! (Casual)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Too casual for a teacher! ⚠️",
+                "explanation": "안녕 is casual talk (반말) reserved only for close same-age friends or younger kids. When speaking to teachers, always use polite form (존댓말).",
+                "socialNuance": "Always use 안녕하세요 with adults and teachers."
+              },
+              "nextTurnId": null
+            },
+            {
+              "id": "opt-1c",
+              "korean": "감사합니다!",
+              "phonetic": "Gam-sa-ham-ni-da!",
+              "english": "Thank you! (Polite)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Polite, but not a greeting! 🙏",
+                "explanation": "감사합니다 means 'Thank you'. Your teacher just welcomed you, so return the greeting first with 안녕하세요!",
+                "socialNuance": "Save 감사합니다 for when Teacher Park hands you study materials."
+              },
+              "nextTurnId": null
+            }
+          ]
+        },
+        {
+          "id": "turn-2",
+          "speaker": "teacher_park",
+          "speech": {
+            "korean": "오늘 수업 준비됐어요?",
+            "phonetic": "O-neul su-eop jun-bi-dwae-sseo-yo?",
+            "english": "Are you ready for class today?"
+          },
+          "prompt": "Respond politely with 'Yes!'",
+          "options": [
+            {
+              "id": "opt-2a",
+              "korean": "네!",
+              "phonetic": "Ne!",
+              "english": "Yes! (Polite)",
+              "isCorrect": true,
+              "feedback": {
+                "title": "Clear & respectful! 👍",
+                "explanation": "네 is standard, polite agreement (존댓말) when answering a teacher or elder.",
+                "socialNuance": "Saying 네 with a bright smile starts class on a great note!"
+              },
+              "nextTurnId": "turn-complete"
+            },
+            {
+              "id": "opt-2b",
+              "korean": "응!",
+              "phonetic": "Eung!",
+              "english": "Yeah! (Casual)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Watch the politeness level! ⚠️",
+                "explanation": "응 is casual agreement between close friends. When answering a teacher, always use 네.",
+                "socialNuance": "Adults expect 네 rather than 응 in school settings."
+              },
+              "nextTurnId": null
+            },
+            {
+              "id": "opt-2c",
+              "korean": "안녕히 가세요!",
+              "phonetic": "An-nyeong-hi ga-se-yo!",
+              "english": "Goodbye! (To someone leaving)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Don't leave yet! 🏃",
+                "explanation": "안녕히 가세요 means 'Goodbye (Go well)'. Class is just starting!",
+                "socialNuance": "Save this for when you or someone else departs at the end of the day."
+              },
+              "nextTurnId": null
+            }
+          ]
+        }
+      ],
+      "completion": {
+        "badge": "🏫",
+        "title": "Polite School Morning Greeting Mastered!",
+        "summary": "You entered the classroom, greeted Teacher Park respectfully with 안녕하세요, and politely confirmed ready for class with 네!",
+        "rewardText": "⭐ Scenario Mastered (+1 Star)"
+      }
+    }
   },
   {
     "id": "lesson-2",
@@ -244,11 +376,11 @@
         "fact": "Key ingredient in Korean BBQ favorites like bulgogi and galbi!"
       },
       {
-        "korean": "사과",
-        "phonetic": "Sa-gwa",
-        "english": "Apple (or Apology)",
-        "emoji": "🍎",
-        "fact": "Fun fact: 'Sagwa' means both crisp apple and sincere apology in Korean!"
+        "korean": "맛있어요",
+        "phonetic": "Ma-si-sseo-yo",
+        "english": "Delicious / Yum",
+        "emoji": "😋",
+        "fact": "Say this when enjoying a tasty meal or snack—cooks love hearing it!"
       },
       {
         "korean": "우유",

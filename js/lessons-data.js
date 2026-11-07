@@ -1,532 +1,659 @@
 /**
  * Korean Language Buddy - 10 Structured Lessons
- * Each lesson has 6 practical vocabulary words with Korean, phonetic pronunciation,
- * English meaning, emoji icon, and engaging usage tip.
+ * Static fallback dataset
  */
 
 const LESSONS_DATA = [
   {
-    id: "lesson-1",
-    number: 1,
-    title: "Essential Greetings",
-    category: "Greetings & Manners",
-    icon: "👋",
-    description: "Start friendly conversations with everyday polite greetings.",
-    words: [
+    "id": "lesson-1",
+    "number": 1,
+    "title": "Essential Greetings",
+    "category": "Greetings & Manners",
+    "icon": "👋",
+    "description": "Start friendly conversations with everyday polite greetings.",
+    "words": [
       {
-        korean: "안녕하세요",
-        phonetic: "An-nyeong-ha-se-yo",
-        english: "Hello / Hi",
-        emoji: "👋",
-        fact: "The most common polite greeting in Korea. Give a gentle nod or bow as you say it!"
+        "korean": "안녕하세요",
+        "phonetic": "An-nyeong-ha-se-yo",
+        "english": "Hello / Hi",
+        "emoji": "👋",
+        "fact": "The most common polite greeting in Korea. Give a gentle nod or bow as you say it!"
       },
       {
-        korean: "감사합니다",
-        phonetic: "Gam-sa-ham-ni-da",
-        english: "Thank You",
-        emoji: "🙏",
-        fact: "Use this to show gratitude to teachers, parents, shopkeepers, and friends."
+        "korean": "감사합니다",
+        "phonetic": "Gam-sa-ham-ni-da",
+        "english": "Thank You",
+        "emoji": "🙏",
+        "fact": "Use this to show gratitude to teachers, parents, shopkeepers, and friends."
       },
       {
-        korean: "네",
-        phonetic: "Ne",
-        english: "Yes (Sure)",
-        emoji: "👍",
-        fact: "A clear, polite way to agree. Saying it with a smile always sounds pleasant."
+        "korean": "네",
+        "phonetic": "Ne",
+        "english": "Yes (Sure)",
+        "emoji": "👍",
+        "fact": "A clear, polite way to agree. Saying it with a smile always sounds pleasant."
       },
       {
-        korean: "아니요",
-        phonetic: "A-ni-yo",
-        english: "No (Nope)",
-        emoji: "🙅",
-        fact: "A polite way to decline or disagree without sounding harsh."
+        "korean": "아니요",
+        "phonetic": "A-ni-yo",
+        "english": "No (Nope)",
+        "emoji": "🙅",
+        "fact": "A polite way to decline or disagree without sounding harsh."
       },
       {
-        korean: "맛있어요",
-        phonetic: "Ma-si-sseo-yo",
-        english: "Delicious / Yum",
-        emoji: "😋",
-        fact: "Say this when enjoying a tasty meal or snack—cooks love hearing it!"
+        "korean": "반갑습니다",
+        "phonetic": "Ban-gap-seum-ni-da",
+        "english": "Nice to meet you / Glad to see you",
+        "emoji": "🤝",
+        "fact": "A warm, polite expression used when meeting someone or greeting an acquaintance."
       },
       {
-        korean: "안녕히 가세요",
-        phonetic: "An-nyeong-hi ga-se-yo",
-        english: "Goodbye (Go well)",
-        emoji: "🏃",
-        fact: "Say this to someone who is leaving when you are staying."
+        "korean": "안녕히 가세요",
+        "phonetic": "An-nyeong-hi ga-se-yo",
+        "english": "Goodbye (Go well)",
+        "emoji": "🏃",
+        "fact": "Say this to someone who is leaving when you are staying."
+      }
+    ],
+    "goal": "Greet someone politely at school",
+    "scene": {
+      "location": "Classroom Door",
+      "backgroundTheme": "school-morning",
+      "illustration": "🏫",
+      "context": "You arrived at the classroom entrance. Your teacher, Teacher Park (박 선생님), looks up and welcomes you!"
+    },
+    "characters": {
+      "npc": {
+        "id": "teacher_park",
+        "name": "Teacher Park (박 선생님)",
+        "role": "Teacher",
+        "avatar": "👩‍🏫",
+        "relationshipLevel": "polite_formal"
+      },
+      "learner": {
+        "role": "Student"
+      }
+    },
+    "scenario": {
+      "initialTurnId": "turn-1",
+      "turns": [
+        {
+          "id": "turn-1",
+          "speaker": "teacher_park",
+          "speech": {
+            "korean": "좋은 아침이에요! 안녕하세요!",
+            "phonetic": "Jo-eun a-chim-i-e-yo! An-nyeong-ha-se-yo!",
+            "english": "Good morning! Hello!"
+          },
+          "prompt": "How do you greet your teacher respectfully?",
+          "options": [
+            {
+              "id": "opt-1a",
+              "korean": "안녕하세요!",
+              "phonetic": "An-nyeong-ha-se-yo!",
+              "english": "Hello! (Polite)",
+              "isCorrect": true,
+              "feedback": {
+                "title": "Spot on! 🌟",
+                "explanation": "안녕하세요 is the proper polite greeting (존댓말) for teachers, elders, and new acquaintances.",
+                "socialNuance": "Give a gentle head nod or slight bow as you say it!"
+              },
+              "nextTurnId": "turn-2"
+            },
+            {
+              "id": "opt-1b",
+              "korean": "안녕!",
+              "phonetic": "An-nyeong!",
+              "english": "Hey! / Hi! (Casual)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Too casual for a teacher! ⚠️",
+                "explanation": "안녕 is casual talk (반말) reserved only for close same-age friends or younger kids. When speaking to teachers, always use polite form (존댓말).",
+                "socialNuance": "Always use 안녕하세요 with adults and teachers."
+              },
+              "nextTurnId": null
+            },
+            {
+              "id": "opt-1c",
+              "korean": "감사합니다!",
+              "phonetic": "Gam-sa-ham-ni-da!",
+              "english": "Thank you! (Polite)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Polite, but not a greeting! 🙏",
+                "explanation": "감사합니다 means 'Thank you'. Your teacher just welcomed you, so return the greeting first with 안녕하세요!",
+                "socialNuance": "Save 감사합니다 for when Teacher Park hands you study materials."
+              },
+              "nextTurnId": null
+            }
+          ]
+        },
+        {
+          "id": "turn-2",
+          "speaker": "teacher_park",
+          "speech": {
+            "korean": "오늘 수업 준비됐어요?",
+            "phonetic": "O-neul su-eop jun-bi-dwae-sseo-yo?",
+            "english": "Are you ready for class today?"
+          },
+          "prompt": "Respond politely with 'Yes!'",
+          "options": [
+            {
+              "id": "opt-2a",
+              "korean": "네!",
+              "phonetic": "Ne!",
+              "english": "Yes! (Polite)",
+              "isCorrect": true,
+              "feedback": {
+                "title": "Clear & respectful! 👍",
+                "explanation": "네 is standard, polite agreement (존댓말) when answering a teacher or elder.",
+                "socialNuance": "Saying 네 with a bright smile starts class on a great note!"
+              },
+              "nextTurnId": "turn-complete"
+            },
+            {
+              "id": "opt-2b",
+              "korean": "응!",
+              "phonetic": "Eung!",
+              "english": "Yeah! (Casual)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Watch the politeness level! ⚠️",
+                "explanation": "응 is casual agreement between close friends. When answering a teacher, always use 네.",
+                "socialNuance": "Adults expect 네 rather than 응 in school settings."
+              },
+              "nextTurnId": null
+            },
+            {
+              "id": "opt-2c",
+              "korean": "안녕히 가세요!",
+              "phonetic": "An-nyeong-hi ga-se-yo!",
+              "english": "Goodbye! (To someone leaving)",
+              "isCorrect": false,
+              "feedback": {
+                "title": "Don't leave yet! 🏃",
+                "explanation": "안녕히 가세요 means 'Goodbye (Go well)'. Class is just starting!",
+                "socialNuance": "Save this for when you or someone else departs at the end of the day."
+              },
+              "nextTurnId": null
+            }
+          ]
+        }
+      ],
+      "completion": {
+        "badge": "🏫",
+        "title": "Polite School Morning Greeting Mastered!",
+        "summary": "You entered the classroom, greeted Teacher Park respectfully with 안녕하세요, and politely confirmed ready for class with 네!",
+        "rewardText": "⭐ Scenario Mastered (+1 Star)"
+      }
+    }
+  },
+  {
+    "id": "lesson-2",
+    "number": 2,
+    "title": "Numbers 1 to 6",
+    "category": "Numbers & Counting",
+    "icon": "🔢",
+    "description": "Master basic Sino-Korean counting words for prices, dates, and order.",
+    "words": [
+      {
+        "korean": "일",
+        "phonetic": "Il",
+        "english": "One (1)",
+        "emoji": "1️⃣",
+        "fact": "Also sounds like the Korean word for 'work' and 'day'!"
+      },
+      {
+        "korean": "이",
+        "phonetic": "I",
+        "english": "Two (2)",
+        "emoji": "2️⃣",
+        "fact": "Short and sweet! Also the word for 'teeth' in Korean."
+      },
+      {
+        "korean": "삼",
+        "phonetic": "Sam",
+        "english": "Three (3)",
+        "emoji": "3️⃣",
+        "fact": "Sam is also in 'samgyeopsal' (Korean pork belly), referring to 3 layers!"
+      },
+      {
+        "korean": "사",
+        "phonetic": "Sa",
+        "english": "Four (4)",
+        "emoji": "4️⃣",
+        "fact": "Used in four seasons ('sa-gye-jeol') in Korea."
+      },
+      {
+        "korean": "오",
+        "phonetic": "O",
+        "english": "Five (5)",
+        "emoji": "5️⃣",
+        "fact": "Easy to pronounce like the English letter 'O'!"
+      },
+      {
+        "korean": "육",
+        "phonetic": "Yuk",
+        "english": "Six (6)",
+        "emoji": "6️⃣",
+        "fact": "Sometimes pronounced as 'ryuk' in certain compound phrases."
       }
     ]
   },
   {
-    id: "lesson-2",
-    number: 2,
-    title: "Numbers 1 to 6",
-    category: "Numbers & Counting",
-    icon: "🔢",
-    description: "Master basic Sino-Korean counting words for prices, dates, and order.",
-    words: [
+    "id": "lesson-3",
+    "number": 3,
+    "title": "Family & People",
+    "category": "People & Relationships",
+    "icon": "👨‍👩‍👧",
+    "description": "Learn how to talk about family members and people around you.",
+    "words": [
       {
-        korean: "일",
-        phonetic: "Il",
-        english: "One (1)",
-        emoji: "1️⃣",
-        fact: "Also sounds like the Korean word for 'work' and 'day'!"
+        "korean": "엄마",
+        "phonetic": "Eom-ma",
+        "english": "Mom / Mother",
+        "emoji": "👩",
+        "fact": "An affectionate, warm word that children and adults often use for their mother."
       },
       {
-        korean: "이",
-        phonetic: "I",
-        english: "Two (2)",
-        emoji: "2️⃣",
-        fact: "Short and sweet! Also the word for 'teeth' in Korean."
+        "korean": "아빠",
+        "phonetic": "A-ppa",
+        "english": "Dad / Father",
+        "emoji": "👨",
+        "fact": "The everyday friendly title for dad in Korean homes."
       },
       {
-        korean: "삼",
-        phonetic: "Sam",
-        english: "Three (3)",
-        emoji: "3️⃣",
-        fact: "Sam is also in 'samgyeopsal' (Korean pork belly), referring to 3 layers!"
+        "korean": "친구",
+        "phonetic": "Chin-gu",
+        "english": "Friend",
+        "emoji": "🤝",
+        "fact": "Traditionally refers to peers of the same age, but widely used for close buddies!"
       },
       {
-        korean: "사",
-        phonetic: "Sa",
-        english: "Four (4)",
-        emoji: "4️⃣",
-        fact: "Used in four seasons ('sa-gye-jeol') in Korea."
+        "korean": "선생님",
+        "phonetic": "Seon-saeng-nim",
+        "english": "Teacher",
+        "emoji": "🧑‍🏫",
+        "fact": "'-nim' is an honorific suffix showing deep respect for mentors and teachers."
       },
       {
-        korean: "오",
-        phonetic: "O",
-        english: "Five (5)",
-        emoji: "5️⃣",
-        fact: "Easy to pronounce like the English letter 'O'!"
+        "korean": "동생",
+        "phonetic": "Dong-saeng",
+        "english": "Younger Sibling",
+        "emoji": "🧒",
+        "fact": "Can mean younger brother ('nam-dongsaeng') or younger sister ('yeo-dongsaeng')."
       },
       {
-        korean: "육",
-        phonetic: "Yuk",
-        english: "Six (6)",
-        emoji: "6️⃣",
-        fact: "Sometimes pronounced as 'ryuk' in certain compound phrases."
+        "korean": "가족",
+        "phonetic": "Ga-jok",
+        "english": "Family",
+        "emoji": "🏠",
+        "fact": "Literally connects to the characters for 'household' and 'tribe'!"
       }
     ]
   },
   {
-    id: "lesson-3",
-    number: 3,
-    title: "Family & People",
-    category: "People & Relationships",
-    icon: "👨‍👩‍👧",
-    description: "Learn how to talk about family members and people around you.",
-    words: [
+    "id": "lesson-4",
+    "number": 4,
+    "title": "Vibrant Colors",
+    "category": "Colors & Visuals",
+    "icon": "🎨",
+    "description": "Name bright and vivid colors you see every day.",
+    "words": [
       {
-        korean: "엄마",
-        phonetic: "Eom-ma",
-        english: "Mom / Mother",
-        emoji: "👩",
-        fact: "An affectionate, warm word that children and adults often use for their mother."
+        "korean": "빨간색",
+        "phonetic": "Ppal-gan-saek",
+        "english": "Red",
+        "emoji": "🔴",
+        "fact": "'Saek' means color. You see lots of red in Korean chili paste (gochujang)!"
       },
       {
-        korean: "아빠",
-        phonetic: "A-ppa",
-        english: "Dad / Father",
-        emoji: "👨",
-        fact: "The everyday friendly title for dad in Korean homes."
+        "korean": "파란색",
+        "phonetic": "Pa-ran-saek",
+        "english": "Blue",
+        "emoji": "🔵",
+        "fact": "The color of clear skies and the East Sea in Korea."
       },
       {
-        korean: "친구",
-        phonetic: "Chin-gu",
-        english: "Friend",
-        emoji: "🤝",
-        fact: "Traditionally refers to peers of the same age, but widely used for close buddies!"
+        "korean": "노란색",
+        "phonetic": "No-ran-saek",
+        "english": "Yellow",
+        "emoji": "🟡",
+        "fact": "Often associated with sweet yellow Forsythia flowers (Gaenari) blooming in spring."
       },
       {
-        korean: "선생님",
-        phonetic: "Seon-saeng-nim",
-        english: "Teacher",
-        emoji: "🧑‍🏫",
-        fact: "'-nim' is an honorific suffix showing deep respect for mentors and teachers."
+        "korean": "초록색",
+        "phonetic": "Cho-rok-saek",
+        "english": "Green",
+        "emoji": "🟢",
+        "fact": "The fresh color of pine trees, jade, and summer mountains."
       },
       {
-        korean: "동생",
-        phonetic: "Dong-saeng",
-        english: "Younger Sibling",
-        emoji: "🧒",
-        fact: "Can mean younger brother ('nam-dongsaeng') or younger sister ('yeo-dongsaeng')."
+        "korean": "하얀색",
+        "phonetic": "Ha-yan-saek",
+        "english": "White",
+        "emoji": "⚪",
+        "fact": "Historically, Koreans were known as the 'white-clad folk' for wearing clean white Hanbok."
       },
       {
-        korean: "가족",
-        phonetic: "Ga-jok",
-        english: "Family",
-        emoji: "🏠",
-        fact: "Literally connects to the characters for 'household' and 'tribe'!"
+        "korean": "검은색",
+        "phonetic": "Geom-eun-saek",
+        "english": "Black",
+        "emoji": "⚫",
+        "fact": "Sleek and classic, like ink used in traditional East Asian calligraphy."
       }
     ]
   },
   {
-    id: "lesson-4",
-    number: 4,
-    title: "Vibrant Colors",
-    category: "Colors & Visuals",
-    icon: "🎨",
-    description: "Name bright and vivid colors you see every day.",
-    words: [
+    "id": "lesson-5",
+    "number": 5,
+    "title": "Delicious Foods",
+    "category": "Food & Drinks",
+    "icon": "🍱",
+    "description": "Common Korean meal staples and tasty food terms.",
+    "words": [
       {
-        korean: "빨간색",
-        phonetic: "Ppal-gan-saek",
-        english: "Red",
-        emoji: "🔴",
-        fact: "'Saek' means color. You see lots of red in Korean chili paste (gochujang)!"
+        "korean": "밥",
+        "phonetic": "Bap",
+        "english": "Cooked Rice / Meal",
+        "emoji": "🍚",
+        "fact": "'Bap meogeosseoyo?' (Have you eaten rice?) is a warm everyday way to ask 'How are you?'"
       },
       {
-        korean: "파란색",
-        phonetic: "Pa-ran-saek",
-        english: "Blue",
-        emoji: "🔵",
-        fact: "The color of clear skies and the East Sea in Korea."
+        "korean": "물",
+        "phonetic": "Mul",
+        "english": "Water",
+        "emoji": "💧",
+        "fact": "A super handy word in restaurants: 'Mul juseyo' means 'Please give me water'!"
       },
       {
-        korean: "노란색",
-        phonetic: "No-ran-saek",
-        english: "Yellow",
-        emoji: "🟡",
-        fact: "Often associated with sweet yellow Forsythia flowers (Gaenari) blooming in spring."
+        "korean": "김치",
+        "phonetic": "Kim-chi",
+        "english": "Kimchi",
+        "emoji": "🥬",
+        "fact": "Korea's famous fermented vegetable dish made with Napa cabbage, radish, and seasonings."
       },
       {
-        korean: "초록색",
-        phonetic: "Cho-rok-saek",
-        english: "Green",
-        emoji: "🟢",
-        fact: "The fresh color of pine trees, jade, and summer mountains."
+        "korean": "고기",
+        "phonetic": "Go-gi",
+        "english": "Meat",
+        "emoji": "🥩",
+        "fact": "Key ingredient in Korean BBQ favorites like bulgogi and galbi!"
       },
       {
-        korean: "하얀색",
-        phonetic: "Ha-yan-saek",
-        english: "White",
-        emoji: "⚪",
-        fact: "Historically, Koreans were known as the 'white-clad folk' for wearing clean white Hanbok."
+        "korean": "맛있어요",
+        "phonetic": "Ma-si-sseo-yo",
+        "english": "Delicious / Yum",
+        "emoji": "😋",
+        "fact": "Say this when enjoying a tasty meal or snack—cooks love hearing it!"
       },
       {
-        korean: "검은색",
-        phonetic: "Geom-eun-saek",
-        english: "Black",
-        emoji: "⚫",
-        fact: "Sleek and classic, like ink used in traditional East Asian calligraphy."
+        "korean": "우유",
+        "phonetic": "U-yu",
+        "english": "Milk",
+        "emoji": "🥛",
+        "fact": "Korean banana milk ('banana-mat uyu') in the chubby bottle is a beloved classic snack."
       }
     ]
   },
   {
-    id: "lesson-5",
-    number: 5,
-    title: "Delicious Foods",
-    category: "Food & Drinks",
-    icon: "🍱",
-    description: "Common Korean meal staples and tasty food terms.",
-    words: [
+    "id": "lesson-6",
+    "number": 6,
+    "title": "Friendly Animals",
+    "category": "Nature & Animals",
+    "icon": "🐾",
+    "description": "Favorite pets and wild creatures in Korean.",
+    "words": [
       {
-        korean: "밥",
-        phonetic: "Bap",
-        english: "Cooked Rice / Meal",
-        emoji: "🍚",
-        fact: "'Bap meogeosseoyo?' (Have you eaten rice?) is a warm everyday way to ask 'How are you?'"
+        "korean": "강아지",
+        "phonetic": "Gang-a-ji",
+        "english": "Puppy / Dog",
+        "emoji": "🐶",
+        "fact": "An affectionate word for a puppy or pet dog. Korean dogs bark 'meong-meong'!"
       },
       {
-        korean: "물",
-        phonetic: "Mul",
-        english: "Water",
-        emoji: "💧",
-        fact: "A super handy word in restaurants: 'Mul juseyo' means 'Please give me water'!"
+        "korean": "고양이",
+        "phonetic": "Go-yang-i",
+        "english": "Cat",
+        "emoji": "🐱",
+        "fact": "Korean cats meow 'ya-ong'! Street cats are lovingly called 'gil-goyangi'."
       },
       {
-        korean: "김치",
-        phonetic: "Kim-chi",
-        english: "Kimchi",
-        emoji: "🥬",
-        fact: "Korea's famous fermented vegetable dish made with Napa cabbage, radish, and seasonings."
+        "korean": "토끼",
+        "phonetic": "To-kki",
+        "english": "Rabbit / Bunny",
+        "emoji": "🐰",
+        "fact": "In Korean folklore, a moon rabbit pounds sweet rice cakes on the full moon!"
       },
       {
-        korean: "고기",
-        phonetic: "Go-gi",
-        english: "Meat",
-        emoji: "🥩",
-        fact: "Key ingredient in Korean BBQ favorites like bulgogi and galbi!"
+        "korean": "곰",
+        "phonetic": "Gom",
+        "english": "Bear",
+        "emoji": "🐻",
+        "fact": "Bears play a starring role in the ancient Korean foundation myth of Dangun."
       },
       {
-        korean: "사과",
-        phonetic: "Sa-gwa",
-        english: "Apple (or Apology)",
-        emoji: "🍎",
-        fact: "Fun fact: 'Sagwa' means both crisp apple and sincere apology in Korean!"
+        "korean": "새",
+        "phonetic": "Sae",
+        "english": "Bird",
+        "emoji": "🐦",
+        "fact": "Short one-syllable word. Magpies ('kkachi') are considered lucky birds in Korea."
       },
       {
-        korean: "우유",
-        phonetic: "U-yu",
-        english: "Milk",
-        emoji: "🥛",
-        fact: "Korean banana milk ('banana-mat uyu') in the chubby bottle is a beloved classic snack."
+        "korean": "물고기",
+        "phonetic": "Mul-go-gi",
+        "english": "Fish",
+        "emoji": "🐟",
+        "fact": "Literally translates to 'water meat' ('mul' = water, 'gogi' = meat)!"
       }
     ]
   },
   {
-    id: "lesson-6",
-    number: 6,
-    title: "Friendly Animals",
-    category: "Nature & Animals",
-    icon: "🐾",
-    description: "Favorite pets and wild creatures in Korean.",
-    words: [
+    "id": "lesson-7",
+    "number": 7,
+    "title": "School & Stationery",
+    "category": "Learning & School",
+    "icon": "🎒",
+    "description": "Words for school life, writing tools, and study time.",
+    "words": [
       {
-        korean: "강아지",
-        phonetic: "Gang-a-ji",
-        english: "Puppy / Dog",
-        emoji: "🐶",
-        fact: "An affectionate word for a puppy or pet dog. Korean dogs bark 'meong-meong'!"
+        "korean": "학교",
+        "phonetic": "Hak-gyo",
+        "english": "School",
+        "emoji": "🏫",
+        "fact": "Elementary school in Korea is called 'chodeung-hakgyo'."
       },
       {
-        korean: "고양이",
-        phonetic: "Go-yang-i",
-        english: "Cat",
-        emoji: "🐱",
-        fact: "Korean cats meow 'ya-ong'! Street cats are lovingly called 'gil-goyangi'."
+        "korean": "책",
+        "phonetic": "Chaek",
+        "english": "Book",
+        "emoji": "📖",
+        "fact": "Reading a book is 'chaek-eul ilgeo-yo'."
       },
       {
-        korean: "토끼",
-        phonetic: "To-kki",
-        english: "Rabbit / Bunny",
-        emoji: "🐰",
-        fact: "In Korean folklore, a moon rabbit pounds sweet rice cakes on the full moon!"
+        "korean": "연필",
+        "phonetic": "Yeon-pil",
+        "english": "Pencil",
+        "emoji": "✏️",
+        "fact": "A handy tool for practicing Hangul stroke orders!"
       },
       {
-        korean: "곰",
-        phonetic: "Gom",
-        english: "Bear",
-        emoji: "🐻",
-        fact: "Bears play a starring role in the ancient Korean foundation myth of Dangun."
+        "korean": "가방",
+        "phonetic": "Ga-bang",
+        "english": "Bag / Backpack",
+        "emoji": "🎒",
+        "fact": "Borrowed from Portuguese 'capa' / Japanese centuries ago into modern Korean."
       },
       {
-        korean: "새",
-        phonetic: "Sae",
-        english: "Bird",
-        emoji: "🐦",
-        fact: "Short one-syllable word. Magpies ('kkachi') are considered lucky birds in Korea."
+        "korean": "책상",
+        "phonetic": "Chaek-sang",
+        "english": "Desk",
+        "emoji": "🪑",
+        "fact": "Literally combines 'chaek' (book) and 'sang' (table)!"
       },
       {
-        korean: "물고기",
-        phonetic: "Mul-go-gi",
-        english: "Fish",
-        emoji: "🐟",
-        fact: "Literally translates to 'water meat' ('mul' = water, 'gogi' = meat)!"
+        "korean": "시계",
+        "phonetic": "Si-gye",
+        "english": "Clock / Watch",
+        "emoji": "⏰",
+        "fact": "Helps everyone stay punctual for morning classes."
       }
     ]
   },
   {
-    id: "lesson-7",
-    number: 7,
-    title: "School & Stationery",
-    category: "Learning & School",
-    icon: "🎒",
-    description: "Words for school life, writing tools, and study time.",
-    words: [
+    "id": "lesson-8",
+    "number": 8,
+    "title": "Feelings & Moods",
+    "category": "Feelings & Expressions",
+    "icon": "😊",
+    "description": "Express how your day is going and share your emotions.",
+    "words": [
       {
-        korean: "학교",
-        phonetic: "Hak-gyo",
-        english: "School",
-        emoji: "🏫",
-        fact: "Elementary school in Korea is called 'chodeung-hakgyo'."
+        "korean": "행복해요",
+        "phonetic": "Haeng-bok-hae-yo",
+        "english": "Happy",
+        "emoji": "😄",
+        "fact": "From the noun 'haengbok' (happiness) plus polite 'haeyo' (doing/feeling)."
       },
       {
-        korean: "책",
-        phonetic: "Chaek",
-        english: "Book",
-        emoji: "📖",
-        fact: "Reading a book is 'chaek-eul ilgeo-yo'."
+        "korean": "좋아요",
+        "phonetic": "Jo-a-yo",
+        "english": "Good / I like it",
+        "emoji": "👍",
+        "fact": "Used constantly in Korea to say 'Sounds great!' or 'I like that idea!'"
       },
       {
-        korean: "연필",
-        phonetic: "Yeon-pil",
-        english: "Pencil",
-        emoji: "✏️",
-        fact: "A handy tool for practicing Hangul stroke orders!"
+        "korean": "슬퍼요",
+        "phonetic": "Seul-peo-yo",
+        "english": "Sad",
+        "emoji": "😢",
+        "fact": "Expresses sadness or empathy when watching an emotional story."
       },
       {
-        korean: "가방",
-        phonetic: "Ga-bang",
-        english: "Bag / Backpack",
-        emoji: "🎒",
-        fact: "Borrowed from Portuguese 'capa' / Japanese centuries ago into modern Korean."
+        "korean": "피곤해요",
+        "phonetic": "Pi-gon-hae-yo",
+        "english": "Tired / Sleepy",
+        "emoji": "🥱",
+        "fact": "Great phrase after a long day of sports, studying, or travel."
       },
       {
-        korean: "책상",
-        phonetic: "Chaek-sang",
-        english: "Desk",
-        emoji: "🪑",
-        fact: "Literally combines 'chaek' (book) and 'sang' (table)!"
+        "korean": "신나요",
+        "phonetic": "Sin-na-yo",
+        "english": "Excited / Fun",
+        "emoji": "🎉",
+        "fact": "Say this when you're looking forward to an amusement park or party!"
       },
       {
-        korean: "시계",
-        phonetic: "Si-gye",
-        english: "Clock / Watch",
-        emoji: "⏰",
-        fact: "Helps everyone stay punctual for morning classes."
+        "korean": "괜찮아요",
+        "phonetic": "Gwaen-chan-a-yo",
+        "english": "It's Okay / No problem",
+        "emoji": "👌",
+        "fact": "One of the most reassuring everyday phrases in the Korean language."
       }
     ]
   },
   {
-    id: "lesson-8",
-    number: 8,
-    title: "Feelings & Moods",
-    category: "Feelings & Expressions",
-    icon: "😊",
-    description: "Express how your day is going and share your emotions.",
-    words: [
+    "id": "lesson-9",
+    "number": 9,
+    "title": "Body & Senses",
+    "category": "Body & Health",
+    "icon": "👀",
+    "description": "Basic body parts to describe yourself and stay healthy.",
+    "words": [
       {
-        korean: "행복해요",
-        phonetic: "Haeng-bok-hae-yo",
-        english: "Happy",
-        emoji: "😄",
-        fact: "From the noun 'haengbok' (happiness) plus polite 'haeyo' (doing/feeling)."
+        "korean": "눈",
+        "phonetic": "Nun",
+        "english": "Eye (or Snow)",
+        "emoji": "👁️",
+        "fact": "'Nun' means both 'eye' and 'falling snow'—you tell them apart by context!"
       },
       {
-        korean: "좋아요",
-        phonetic: "Jo-a-yo",
-        english: "Good / I like it",
-        emoji: "👍",
-        fact: "Used constantly in Korea to say 'Sounds great!' or 'I like that idea!'"
+        "korean": "코",
+        "phonetic": "Ko",
+        "english": "Nose",
+        "emoji": "👃",
+        "fact": "A punchy single syllable that's super easy to remember."
       },
       {
-        korean: "슬퍼요",
-        phonetic: "Seul-peo-yo",
-        english: "Sad",
-        emoji: "😢",
-        fact: "Expresses sadness or empathy when watching an emotional story."
+        "korean": "입",
+        "phonetic": "Ip",
+        "english": "Mouth",
+        "emoji": "👄",
+        "fact": "Used for speaking and tasting delicious Korean dishes!"
       },
       {
-        korean: "피곤해요",
-        phonetic: "Pi-gon-hae-yo",
-        english: "Tired / Sleepy",
-        emoji: "🥱",
-        fact: "Great phrase after a long day of sports, studying, or travel."
+        "korean": "귀",
+        "phonetic": "Gwi",
+        "english": "Ear",
+        "emoji": "👂",
+        "fact": "'Gwi' is also the root for 'gwiyeowo' (cute / adorable)!"
       },
       {
-        korean: "신나요",
-        phonetic: "Sin-na-yo",
-        english: "Excited / Fun",
-        emoji: "🎉",
-        fact: "Say this when you're looking forward to an amusement park or party!"
+        "korean": "손",
+        "phonetic": "Son",
+        "english": "Hand",
+        "emoji": "✋",
+        "fact": "Used in 'son-ssitgi' (hand washing) and friendly high fives."
       },
       {
-        korean: "괜찮아요",
-        phonetic: "Gwaen-chan-a-yo",
-        english: "It's Okay / No problem",
-        emoji: "👌",
-        fact: "One of the most reassuring everyday phrases in the Korean language."
+        "korean": "발",
+        "phonetic": "Bal",
+        "english": "Foot",
+        "emoji": "🦶",
+        "fact": "Don't confuse with 'dal' (moon) or 'tal' (mask)—notice the crisp 'b' sound!"
       }
     ]
   },
   {
-    id: "lesson-9",
-    number: 9,
-    title: "Body & Senses",
-    category: "Body & Health",
-    icon: "👀",
-    description: "Basic body parts to describe yourself and stay healthy.",
-    words: [
+    "id": "lesson-10",
+    "number": 10,
+    "title": "Daily Action Verbs",
+    "category": "Verbs & Actions",
+    "icon": "⚡",
+    "description": "Everyday action words in polite conversational form.",
+    "words": [
       {
-        korean: "눈",
-        phonetic: "Nun",
-        english: "Eye (or Snow)",
-        emoji: "👁️",
-        fact: "'Nun' means both 'eye' and 'falling snow'—you tell them apart by context!"
+        "korean": "가요",
+        "phonetic": "Ga-yo",
+        "english": "Go / Going",
+        "emoji": "🚶",
+        "fact": "From the verb 'gada' (to go). 'Haggyo-e gayo' = I'm going to school!"
       },
       {
-        korean: "코",
-        phonetic: "Ko",
-        english: "Nose",
-        emoji: "👃",
-        fact: "A punchy single syllable that's super easy to remember."
+        "korean": "와요",
+        "phonetic": "Wa-yo",
+        "english": "Come / Coming",
+        "emoji": "🏃",
+        "fact": "'Eoseo wayo' means welcome, please come in!"
       },
       {
-        korean: "입",
-        phonetic: "Ip",
-        english: "Mouth",
-        emoji: "👄",
-        fact: "Used for speaking and tasting delicious Korean dishes!"
+        "korean": "먹어요",
+        "phonetic": "Meog-eo-yo",
+        "english": "Eat / Eating",
+        "emoji": "🍽️",
+        "fact": "From 'meokda' (to eat). 'Masitge meogeoyo' = Enjoy your meal!"
       },
       {
-        korean: "귀",
-        phonetic: "Gwi",
-        english: "Ear",
-        emoji: "👂",
-        fact: "'Gwi' is also the root for 'gwiyeowo' (cute / adorable)!"
+        "korean": "마셔요",
+        "phonetic": "Ma-syeo-yo",
+        "english": "Drink / Drinking",
+        "emoji": "🥤",
+        "fact": "Used when drinking water, juice, or warm tea."
       },
       {
-        korean: "손",
-        phonetic: "Son",
-        english: "Hand",
-        emoji: "✋",
-        fact: "Used in 'son-ssitgi' (hand washing) and friendly high fives."
+        "korean": "자요",
+        "phonetic": "Ja-yo",
+        "english": "Sleep / Sleeping",
+        "emoji": "😴",
+        "fact": "'Jal jayo' is the sweet, polite phrase for 'Sleep well' / 'Good night'!"
       },
       {
-        korean: "발",
-        phonetic: "Bal",
-        english: "Foot",
-        emoji: "🦶",
-        fact: "Don't confuse with 'dal' (moon) or 'tal' (mask)—notice the crisp 'b' sound!"
-      }
-    ]
-  },
-  {
-    id: "lesson-10",
-    number: 10,
-    title: "Daily Action Verbs",
-    category: "Verbs & Actions",
-    icon: "⚡",
-    description: "Everyday action words in polite conversational form.",
-    words: [
-      {
-        korean: "가요",
-        phonetic: "Ga-yo",
-        english: "Go / Going",
-        emoji: "🚶",
-        fact: "From the verb 'gada' (to go). 'Haggyo-e gayo' = I'm going to school!"
-      },
-      {
-        korean: "와요",
-        phonetic: "Wa-yo",
-        english: "Come / Coming",
-        emoji: "🏃",
-        fact: "'Eoseo wayo' means welcome, please come in!"
-      },
-      {
-        korean: "먹어요",
-        phonetic: "Meog-eo-yo",
-        english: "Eat / Eating",
-        emoji: "🍽️",
-        fact: "From 'meokda' (to eat). 'Masitge meogeoyo' = Enjoy your meal!"
-      },
-      {
-        korean: "마셔요",
-        phonetic: "Ma-syeo-yo",
-        english: "Drink / Drinking",
-        emoji: "🥤",
-        fact: "Used when drinking water, juice, or warm tea."
-      },
-      {
-        korean: "자요",
-        phonetic: "Ja-yo",
-        english: "Sleep / Sleeping",
-        emoji: "😴",
-        fact: "'Jal jayo' is the sweet, polite phrase for 'Sleep well' / 'Good night'!"
-      },
-      {
-        korean: "공부해요",
-        phonetic: "Gong-bu-hae-yo",
-        english: "Study / Studying",
-        emoji: "📚",
-        fact: "From 'gongbu' (study) + 'haeyo' (doing). You are doing it right now with Korean!"
+        "korean": "공부해요",
+        "phonetic": "Gong-bu-hae-yo",
+        "english": "Study / Studying",
+        "emoji": "📚",
+        "fact": "From 'gongbu' (study) + 'haeyo' (doing). You are doing it right now with Korean!"
       }
     ]
   }
 ];
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = LESSONS_DATA;
-}
