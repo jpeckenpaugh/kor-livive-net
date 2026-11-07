@@ -8,6 +8,16 @@
 
   const STORAGE_KEY = 'kor_buddy_profiles_v1';
   const DEFAULT_AVATARS = ['🐯', '🐰', '🦊', '🐼', '🦁', '🐻'];
+  const PROCEDURAL_AVATAR_OPTIONS = [
+    { id: 'tiger', name: '호랑이 (Tiger)', type: 'companion', style: 'critters', seed: 'tiger', emoji: '🐯' },
+    { id: 'cat', name: '고양이 (Cat)', type: 'companion', style: 'critters', seed: 'cat', emoji: '🐱' },
+    { id: 'dog', name: '강아지 (Puppy)', type: 'companion', style: 'critters', seed: 'dog', emoji: '🐶' },
+    { id: 'rabbit', name: '토끼 (Bunny)', type: 'companion', style: 'critters', seed: 'rabbit', emoji: '🐰' },
+    { id: 'horse', name: '말 (Horse)', type: 'companion', style: 'critters', seed: 'horse', emoji: '🐴' },
+    { id: 'minsoo', name: '민수 (Minsoo)', type: 'voxel', seed: 'Minsoo', emoji: '👦' },
+    { id: 'jiwoo', name: '지우 (Jiwoo)', type: 'voxel', seed: 'Jiwoo', emoji: '👧' },
+    { id: 'alex', name: '알렉스 (Alex)', type: 'voxel', seed: 'Alex', emoji: '🧑' }
+  ];
 
   /* ==========================================================================
      0. LESSON REPOSITORY (JSON LOADER WITH FALLBACK)
@@ -56,12 +66,23 @@
   };
 
   /* ==========================================================================
-     1. SPEECH SYNTHESIS ENGINE (KOREAN + ENGLISH)
+     1. SPEECH SYNTHESIS ENGINE (KOREAN + ENGLISH) WITH VOICE PROFILE TUNING
      ========================================================================== */
   const SpeechAudio = {
     supported: 'speechSynthesis' in window,
     voices: [],
     voicesLoaded: false,
+
+    // Character voice profiles with pitch and rate tuning
+    characterPresets: {
+      teacher: { pitch: 1.1, rate: 0.85 },       // Teacher Park: warm, clear, slightly higher & measured
+      customer_horse: { pitch: 0.85, rate: 0.85 }, // Horse / Shopkeeper: grounded, calm, slightly deeper
+      horse: { pitch: 0.85, rate: 0.85 },
+      shopkeeper: { pitch: 0.85, rate: 0.85 },
+      child: { pitch: 1.3, rate: 0.90 },         // Child / young learner: bright, cheerful
+      learner: { pitch: 1.2, rate: 0.90 },
+      default: { pitch: 1.0, rate: 0.85 }
+    },
 
     init: function () {
       if (!this.supported) return;
@@ -97,12 +118,13 @@
     },
 
     /**
-     * Speaks text in target language with callback support
+     * Speaks text in target language with character voice tuning
      * @param {string} text
      * @param {string} lang 'ko-KR' | 'en-US'
      * @param {Function|null} onEndCallback
+     * @param {Object|string|null} characterVoice - Character key or { pitch, rate }
      */
-    speak: function (text, lang = 'ko-KR', onEndCallback = null) {
+    speak: function (text, lang = 'ko-KR', onEndCallback = null, characterVoice = null) {
       if (!this.supported) {
         UIController.showToast('Sound playback is not supported on this browser.');
         if (typeof onEndCallback === 'function') onEndCallback();
@@ -113,8 +135,22 @@
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = lang;
-        // Natural learning speed: slightly slower for Korean learners, natural pace for English
-        utterance.rate = lang.startsWith('ko') ? 0.85 : 0.95;
+
+        // Resolve pitch and rate based on character preset or explicit options
+        let pitch = 1.0;
+        let rate = lang.startsWith('ko') ? 0.85 : 0.95;
+
+        if (typeof characterVoice === 'string') {
+          const preset = this.characterPresets[characterVoice] || this.characterPresets.default;
+          pitch = preset.pitch;
+          rate = preset.rate;
+        } else if (characterVoice && typeof characterVoice === 'object') {
+          if (typeof characterVoice.pitch === 'number') pitch = characterVoice.pitch;
+          if (typeof characterVoice.rate === 'number') rate = characterVoice.rate;
+        }
+
+        utterance.pitch = pitch;
+        utterance.rate = rate;
 
         const voice = this.getVoiceForLang(lang);
         if (voice) {
@@ -195,13 +231,15 @@
       return this.data.profiles.find(p => p.id === this.data.activeProfileId) || null;
     },
 
-    createProfile: function (name, avatar) {
+    createProfile: function (name, avatar, companion = null) {
       const cleanName = (name || '').trim() || 'Learner';
-      const cleanAvatar = avatar || DEFAULT_AVATARS[0];
+      let cleanAvatar = avatar || DEFAULT_AVATARS[0];
+      // If avatar is object or string seed
       const newProfile = {
         id: 'prof_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
         name: cleanName,
         avatar: cleanAvatar,
+        companion: companion || { animal: 'cat', color: 'grey', koreanName: '회색 고양이', seed: 'grey-cat' },
         createdAt: Date.now(),
         stars: 0,
         lessonProgress: {}
@@ -210,6 +248,25 @@
       this.data.activeProfileId = newProfile.id;
       this.save();
       return newProfile;
+    },
+
+    saveLearnerPet: function (petData) {
+      const profile = this.getActiveProfile();
+      if (!profile) return;
+      profile.companion = {
+        ...(profile.companion || {}),
+        ...petData,
+        updatedAt: Date.now()
+      };
+      this.save();
+    },
+
+    getLearnerPet: function () {
+      const profile = this.getActiveProfile();
+      if (!profile || !profile.companion) {
+        return { animal: 'cat', color: 'grey', koreanName: '회색 고양이', seed: 'grey-cat' };
+      }
+      return profile.companion;
     },
 
     createGuestProfile: function () {
@@ -392,13 +449,26 @@
   };
 
   /* ==========================================================================
-     3. SCENARIO ENGINE (PRIMARY SITUATIONAL LEARNER JOURNEY)
+     3. SCENARIO ENGINE (PRIMARY SITUATIONAL LEARNER JOURNEY & ADVANCED SCENARIOS)
      ========================================================================== */
   const ScenarioEngine = {
     currentLesson: null,
     currentTurnIndex: 0,
     turns: [],
     selectedOption: null,
+
+    // Scenario A State (Pet Customizer)
+    petState: {
+      animal: 'cat',
+      color: 'grey'
+    },
+
+    // Scenario B State (Interactive Visual Counter)
+    counterState: {
+      trayItems: [],
+      targetItem: 'apple',
+      targetCount: 3
+    },
 
     initScenario: function (lesson) {
       this.currentLesson = lesson;
@@ -426,11 +496,29 @@
         if (ctxText) ctxText.textContent = lesson.description || '';
       }
 
+      // Render NPC Avatar via DiceBear
       if (lesson.characters && lesson.characters.npc) {
+        const npc = lesson.characters.npc;
         const npcAvatar = document.getElementById('npc-avatar');
         const npcName = document.getElementById('npc-name');
-        if (npcAvatar) npcAvatar.textContent = lesson.characters.npc.avatar || '👩‍🏫';
-        if (npcName) npcName.textContent = lesson.characters.npc.name || 'Conversation Partner';
+
+        if (npcName) npcName.textContent = npc.name || 'Conversation Partner';
+        if (npcAvatar) {
+          npcAvatar.classList.add('npc-interactive');
+          if (typeof AvatarEngine !== 'undefined') {
+            if (npc.id === 'customer_horse') {
+              npcAvatar.innerHTML = AvatarEngine.renderCompanionAvatar('critters', 'horse');
+            } else if (npc.avatarSeed) {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar(npc.avatarSeed);
+            } else if (npc.id === 'teacher_park') {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar('TeacherPark');
+            } else {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar(npc.id || 'NPC');
+            }
+          } else {
+            npcAvatar.textContent = npc.avatar || '👩‍🏫';
+          }
+        }
       }
 
       // Load scenario turns
@@ -500,6 +588,7 @@
 
       this.currentTurnIndex = index;
       const turn = this.turns[index];
+      const lesson = this.currentLesson;
 
       // Update turn counter
       const counter = document.getElementById('scene-turn-counter');
@@ -517,14 +606,17 @@
       if (speechPhonetic) speechPhonetic.textContent = turn.speech.phonetic;
       if (speechEn) speechEn.textContent = turn.speech.english;
 
+      // Resolve character voice
+      const npcVoice = (lesson.characters && lesson.characters.npc && lesson.characters.npc.voice) || 'teacher';
+
       if (audioBtn) {
         audioBtn.onclick = () => {
-          SpeechAudio.speak(turn.speech.korean, 'ko-KR');
+          SpeechAudio.speak(turn.speech.korean, 'ko-KR', null, npcVoice);
         };
       }
 
-      // Automatically speak the NPC greeting softly
-      SpeechAudio.speak(turn.speech.korean, 'ko-KR');
+      // Automatically speak the NPC greeting softly with character pitch/rate
+      SpeechAudio.speak(turn.speech.korean, 'ko-KR', null, npcVoice);
 
       // Update prompt
       const promptText = document.getElementById('scenario-prompt-text');
@@ -532,11 +624,22 @@
         promptText.textContent = turn.prompt;
       }
 
-      // Render options
       const grid = document.getElementById('scenario-options-grid');
       const feedbackCard = document.getElementById('etiquette-feedback-card');
       if (feedbackCard) feedbackCard.style.display = 'none';
 
+      // Check scenario type: Advanced Scenario A (Pet Customizer) or Scenario B (Visual Counter)
+      if (turn.isCustomizerTurn || (lesson.scenario && lesson.scenario.type === 'pet_customizer')) {
+        this.renderPetCustomizer(grid);
+        return;
+      }
+
+      if (turn.isCounterTurn || (lesson.scenario && lesson.scenario.type === 'interactive_counter')) {
+        this.renderInteractiveCounter(grid, lesson.scenario);
+        return;
+      }
+
+      // Standard dialogue options
       if (grid) {
         grid.innerHTML = '';
         turn.options.forEach(opt => {
@@ -556,6 +659,398 @@
       }
     },
 
+    /* ==========================================================================
+       SCENARIO A: PET CUSTOMIZER ("What pet do you have?")
+       ========================================================================== */
+    renderPetCustomizer: function (container) {
+      if (!container) return;
+
+      // Retrieve existing pet from profile if available
+      const savedPet = ProfileManager.getLearnerPet();
+      if (savedPet) {
+        this.petState.animal = savedPet.animal || 'cat';
+        this.petState.color = savedPet.color || 'grey';
+      }
+
+      const animals = [
+        { id: 'cat', kr: '고양이', en: 'Cat', emoji: '🐱' },
+        { id: 'dog', kr: '강아지', en: 'Puppy', emoji: '🐶' },
+        { id: 'rabbit', kr: '토끼', en: 'Rabbit', emoji: '🐰' }
+      ];
+
+      const colors = [
+        { id: 'grey', kr: '회색', en: 'Grey', hex: '#94a3b8' },
+        { id: 'white', kr: '하얀색', en: 'White', hex: '#f8fafc' },
+        { id: 'brown', kr: '갈색', en: 'Brown', hex: '#b45309' }
+      ];
+
+      const self = this;
+
+      function getSentence() {
+        const curAnimal = animals.find(a => a.id === self.petState.animal) || animals[0];
+        const curColor = colors.find(c => c.id === self.petState.color) || colors[0];
+
+        const sentenceKr = `저는 ${curColor.kr} ${curAnimal.kr}가 있어요!`;
+        const colorPhonetic = curColor.id === 'grey' ? 'hoe-saek' : curColor.id === 'white' ? 'ha-yan-saek' : 'gal-saek';
+        const animalPhonetic = curAnimal.id === 'cat' ? 'go-yang-i-ga' : curAnimal.id === 'dog' ? 'gang-a-ji-ga' : 'to-kki-ga';
+        const sentencePhonetic = `Jeo-neun ${colorPhonetic} ${animalPhonetic} i-sseo-yo!`;
+        const sentenceEn = `I have a ${curColor.en.toLowerCase()} ${curAnimal.en.toLowerCase()}!`;
+        const seed = `${self.petState.color}-${self.petState.animal}`;
+
+        return { sentenceKr, sentencePhonetic, sentenceEn, seed, curAnimal, curColor };
+      }
+
+      function updateDisplay() {
+        const data = getSentence();
+
+        const avatarWrapper = document.getElementById('pet-live-avatar');
+        const krNameElem = document.getElementById('pet-display-kr-name');
+        const enNameElem = document.getElementById('pet-display-en-name');
+        const sentKrElem = document.getElementById('pet-sentence-kr');
+        const sentPhoneticElem = document.getElementById('pet-sentence-phonetic');
+        const sentEnElem = document.getElementById('pet-sentence-en');
+
+        if (avatarWrapper && typeof AvatarEngine !== 'undefined') {
+          avatarWrapper.innerHTML = AvatarEngine.renderCompanionAvatar('critters', data.seed);
+          avatarWrapper.classList.remove('pet-bounce');
+          void avatarWrapper.offsetWidth;
+          avatarWrapper.classList.add('pet-bounce');
+        }
+
+        if (krNameElem) krNameElem.textContent = `${data.curColor.kr} ${data.curAnimal.kr} ${data.curAnimal.emoji}`;
+        if (enNameElem) enNameElem.textContent = `${data.curColor.en} ${data.curAnimal.en}`;
+        if (sentKrElem) sentKrElem.textContent = data.sentenceKr;
+        if (sentPhoneticElem) sentPhoneticElem.textContent = data.sentencePhonetic;
+        if (sentEnElem) sentEnElem.textContent = data.sentenceEn;
+      }
+
+      const initialData = getSentence();
+      const initialSvg = (typeof AvatarEngine !== 'undefined')
+        ? AvatarEngine.renderCompanionAvatar('critters', initialData.seed)
+        : initialData.curAnimal.emoji;
+
+      container.innerHTML = `
+        <div class="pet-customizer-container">
+          <div class="pet-stage-display">
+            <div class="pet-avatar-wrapper pet-bounce" id="pet-live-avatar">
+              ${initialSvg}
+            </div>
+            <div class="pet-info-card">
+              <span class="pet-korean-name" id="pet-display-kr-name">${initialData.curColor.kr} ${initialData.curAnimal.kr} ${initialData.curAnimal.emoji}</span>
+              <span class="pet-english-name" id="pet-display-en-name">${initialData.curColor.en} ${initialData.curAnimal.en}</span>
+              <span class="pet-saved-badge">✨ Companion Profile Ready</span>
+            </div>
+          </div>
+
+          <div class="pet-controls-row">
+            <div class="pet-selector-group">
+              <span class="pet-selector-title">1. Choose Animal (동물)</span>
+              <div class="pet-choice-chips" id="pet-animal-chips">
+                ${animals.map(a => `
+                  <button type="button" class="pet-chip-btn ${a.id === self.petState.animal ? 'active' : ''}" data-animal="${a.id}">
+                    <span>${a.emoji}</span> ${a.kr}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="pet-selector-group">
+              <span class="pet-selector-title">2. Choose Color (색상)</span>
+              <div class="pet-choice-chips" id="pet-color-chips">
+                ${colors.map(c => `
+                  <button type="button" class="pet-chip-btn ${c.id === self.petState.color ? 'active' : ''}" data-color="${c.id}">
+                    <span class="pet-chip-color-dot" style="background-color: ${c.hex};"></span> ${c.kr}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="pet-sentence-card">
+            <span class="pet-sentence-title">3. Speak to Teacher Park in Korean</span>
+            <div class="pet-sentence-kr" id="pet-sentence-kr">${initialData.sentenceKr}</div>
+            <div class="pet-sentence-phonetic" id="pet-sentence-phonetic">${initialData.sentencePhonetic}</div>
+            <div class="pet-sentence-en" id="pet-sentence-en">${initialData.sentenceEn}</div>
+            <div class="pet-action-row">
+              <button type="button" class="btn-secondary" id="pet-listen-btn">
+                <span>🔊</span> Listen
+              </button>
+              <button type="button" class="btn-primary" id="pet-confirm-btn">
+                <span>💬</span> 저는 ... 있어요! (Say & Confirm)
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const animalBtns = container.querySelectorAll('#pet-animal-chips .pet-chip-btn');
+      animalBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          animalBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          self.petState.animal = btn.getAttribute('data-animal');
+          updateDisplay();
+        });
+      });
+
+      const colorBtns = container.querySelectorAll('#pet-color-chips .pet-chip-btn');
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          colorBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          self.petState.color = btn.getAttribute('data-color');
+          updateDisplay();
+        });
+      });
+
+      const listenBtn = container.querySelector('#pet-listen-btn');
+      if (listenBtn) {
+        listenBtn.addEventListener('click', () => {
+          const data = getSentence();
+          SpeechAudio.speak(data.sentenceKr, 'ko-KR', null, 'child');
+        });
+      }
+
+      const confirmBtn = container.querySelector('#pet-confirm-btn');
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+          const data = getSentence();
+
+          ProfileManager.saveLearnerPet({
+            animal: self.petState.animal,
+            color: self.petState.color,
+            koreanName: `${data.curColor.kr} ${data.curAnimal.kr}`,
+            seed: data.seed
+          });
+
+          SpeechAudio.speak(data.sentenceKr, 'ko-KR', () => {
+            const feedbackCard = document.getElementById('etiquette-feedback-card');
+            const feedbackTitle = document.getElementById('etiquette-title');
+            const feedbackExp = document.getElementById('etiquette-explanation');
+            const feedbackNuance = document.getElementById('etiquette-nuance');
+            const continueBtn = document.getElementById('etiquette-continue-btn');
+
+            if (feedbackCard) {
+              feedbackCard.className = 'etiquette-feedback-card correct';
+              feedbackTitle.textContent = '참 잘했어요! 🌟 (Wonderful sentence!)';
+              feedbackExp.textContent = `You answered Teacher Park with polite 존댓말 ("${data.sentenceKr}"). Your ${data.curColor.en} ${data.curAnimal.en} is now saved as your companion pet!`;
+              feedbackNuance.textContent = '💡 Etiquette tip: Using "~가 있어요" (I have / There is) with polite "~요" is the standard respectful way to talk about family and pets.';
+              feedbackCard.style.display = 'flex';
+
+              continueBtn.style.display = 'inline-flex';
+              continueBtn.textContent = 'Finish Lesson & Collect Star ⭐';
+              continueBtn.onclick = () => {
+                self.finishScenario();
+              };
+            }
+          }, 'child');
+        });
+      }
+    },
+
+    /* ==========================================================================
+       SCENARIO B: INTERACTIVE VISUAL COUNTER ("Buy 3 apples for my horse")
+       ========================================================================== */
+    renderInteractiveCounter: function (container, scenarioData) {
+      if (!container) return;
+
+      const self = this;
+      this.counterState.trayItems = [];
+      this.counterState.targetItem = (scenarioData && scenarioData.targetItem) || 'apple';
+      this.counterState.targetCount = (scenarioData && scenarioData.targetCount) || 3;
+
+      const koreanCounters = [
+        { count: 1, kr: '하나', phonetic: 'Hana', en: 'One' },
+        { count: 2, kr: '둘', phonetic: 'Dul', en: 'Two' },
+        { count: 3, kr: '셋', phonetic: 'Set', en: 'Three' },
+        { count: 4, kr: '넷', phonetic: 'Net', en: 'Four' }
+      ];
+
+      const shelfItems = [
+        { id: 'apple', kr: '사과', en: 'Apple', emoji: '🍎', isTarget: true },
+        { id: 'watermelon', kr: '수박', en: 'Watermelon', emoji: '🍉', isTarget: false },
+        { id: 'carrot', kr: '당근', en: 'Carrot', emoji: '🥕', isTarget: false },
+        { id: 'banana', kr: '바나나', en: 'Banana', emoji: '🍌', isTarget: false }
+      ];
+
+      const horseSvg = (typeof AvatarEngine !== 'undefined')
+        ? AvatarEngine.renderCompanionAvatar('critters', 'horse')
+        : '🐴';
+
+      container.innerHTML = `
+        <div class="counter-scenario-container">
+          <div class="counter-stage-header">
+            <div class="counter-horse-wrapper">
+              <div class="counter-horse-avatar" id="counter-horse-avatar">
+                ${horseSvg}
+              </div>
+              <div class="counter-horse-speech">
+                <span class="counter-horse-label">Traveler & Horse (말과 손님)</span>
+                <span class="counter-horse-request">"말한테 줄 사과 세 개 주세요." (3 apples, please!)</span>
+              </div>
+            </div>
+            <div class="counter-progress-badge" id="counter-tray-count-badge">
+              0 / 3 Apples
+            </div>
+          </div>
+
+          <div class="counter-tray-section">
+            <span class="counter-tray-title">🛒 Wooden Serving Tray</span>
+            <div class="counter-tray-slots" id="counter-tray-slots">
+              ${[0, 1, 2].map(i => `
+                <div class="counter-tray-slot" id="counter-slot-${i}">
+                  <span style="font-size:0.8rem; color:#d97706; font-weight:600;">Slot ${i+1}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div id="counter-feedback-banner" style="display:none;" class="counter-feedback-banner"></div>
+
+          <div class="counter-market-shelf">
+            <span class="counter-shelf-title">Tap item to add to tray:</span>
+            <div class="counter-shelf-items">
+              ${shelfItems.map(item => `
+                <button type="button" class="counter-item-btn" data-item-id="${item.id}" data-item-kr="${item.kr}" data-item-emoji="${item.emoji}" data-is-target="${item.isTarget}">
+                  <span class="counter-item-icon">${item.emoji}</span>
+                  <span class="counter-item-name-kr">${item.kr}</span>
+                  <span class="counter-item-name-en">${item.en}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="counter-submit-bar">
+            <button type="button" class="btn-primary" id="counter-handover-btn" style="min-width: 240px;" disabled>
+              <span>🍎</span> 여기 있어요! (Here you go!)
+            </button>
+          </div>
+        </div>
+      `;
+
+      function showBanner(message, isGentleWarn = true) {
+        const banner = document.getElementById('counter-feedback-banner');
+        if (!banner) return;
+        banner.className = isGentleWarn ? 'counter-feedback-banner gentle-warn' : 'counter-feedback-banner success';
+        banner.textContent = message;
+        banner.style.display = 'flex';
+      }
+
+      function updateTrayUI() {
+        const badge = document.getElementById('counter-tray-count-badge');
+        const handoverBtn = document.getElementById('counter-handover-btn');
+
+        if (badge) {
+          badge.textContent = `${self.counterState.trayItems.length} / 3 Apples`;
+        }
+
+        for (let i = 0; i < 3; i++) {
+          const slot = document.getElementById(`counter-slot-${i}`);
+          if (!slot) continue;
+
+          if (i < self.counterState.trayItems.length) {
+            const item = self.counterState.trayItems[i];
+            const counterWord = koreanCounters[i];
+            slot.className = 'counter-tray-slot filled';
+            slot.innerHTML = `
+              <span class="counter-slot-emoji">${item.emoji}</span>
+              <span class="counter-slot-korean-count">${counterWord.kr}</span>
+              <button type="button" class="counter-tray-remove-btn" title="Remove" data-remove-index="${i}">✕</button>
+            `;
+          } else {
+            slot.className = 'counter-tray-slot';
+            slot.innerHTML = `<span style="font-size:0.8rem; color:#d97706; font-weight:600;">Slot ${i+1}</span>`;
+          }
+        }
+
+        container.querySelectorAll('.counter-tray-remove-btn').forEach(btn => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const rmIdx = parseInt(btn.getAttribute('data-remove-index'), 10);
+            self.counterState.trayItems.splice(rmIdx, 1);
+            updateTrayUI();
+          };
+        });
+
+        if (handoverBtn) {
+          handoverBtn.disabled = self.counterState.trayItems.length !== 3;
+        }
+      }
+
+      const itemBtns = container.querySelectorAll('.counter-item-btn');
+      itemBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const itemId = btn.getAttribute('data-item-id');
+          const itemKr = btn.getAttribute('data-item-kr');
+          const itemEmoji = btn.getAttribute('data-item-emoji');
+          const isTarget = btn.getAttribute('data-is-target') === 'true';
+
+          if (!isTarget) {
+            btn.classList.add('wrong-shake');
+            setTimeout(() => btn.classList.remove('wrong-shake'), 500);
+            SpeechAudio.speak('사과를 주세요', 'ko-KR', null, 'customer_horse');
+            showBanner(`Gentle tip: The customer asked for apples (사과), not ${itemKr}! 말은 사과를 좋아해요 (The horse loves apples).`, true);
+            return;
+          }
+
+          if (self.counterState.trayItems.length >= 3) {
+            btn.classList.add('wrong-shake');
+            setTimeout(() => btn.classList.remove('wrong-shake'), 500);
+            SpeechAudio.speak('세 개면 충분해요', 'ko-KR', null, 'customer_horse');
+            showBanner('The tray already has 3 apples! Tap "여기 있어요!" (Here you go!) to deliver.', true);
+            return;
+          }
+
+          self.counterState.trayItems.push({ id: itemId, kr: itemKr, emoji: itemEmoji });
+          const countIdx = self.counterState.trayItems.length;
+          const counterWord = koreanCounters[countIdx - 1];
+
+          SpeechAudio.speak(counterWord.kr, 'ko-KR', null, 'child');
+          showBanner(`Added apple ${countIdx}: "${counterWord.kr}" (${counterWord.phonetic} - ${counterWord.en})! ✨`, false);
+
+          updateTrayUI();
+        });
+      });
+
+      const handoverBtn = container.querySelector('#counter-handover-btn');
+      if (handoverBtn) {
+        handoverBtn.addEventListener('click', () => {
+          if (self.counterState.trayItems.length !== 3) return;
+
+          const horseAvatar = document.getElementById('counter-horse-avatar');
+          if (horseAvatar) {
+            horseAvatar.classList.add('horse-cheer');
+          }
+
+          SpeechAudio.speak('여기 있어요!', 'ko-KR', () => {
+            setTimeout(() => {
+              SpeechAudio.speak('고마워요! 맛있게 먹을게요!', 'ko-KR', () => {
+                const feedbackCard = document.getElementById('etiquette-feedback-card');
+                const feedbackTitle = document.getElementById('etiquette-title');
+                const feedbackExp = document.getElementById('etiquette-explanation');
+                const feedbackNuance = document.getElementById('etiquette-nuance');
+                const continueBtn = document.getElementById('etiquette-continue-btn');
+
+                if (feedbackCard) {
+                  feedbackCard.className = 'etiquette-feedback-card correct';
+                  feedbackTitle.textContent = '말이 사과를 맛있게 먹었어요! 🐴🍎';
+                  feedbackExp.textContent = 'You accurately counted 3 apples in native Korean numbers (하나, 둘, 셋) and politely served them with "여기 있어요!" (Here you go!).';
+                  feedbackNuance.textContent = '💡 Etiquette tip: "여기 있어요" is the friendly polite phrase when handing items or food to customers and friends.';
+                  feedbackCard.style.display = 'flex';
+
+                  continueBtn.style.display = 'inline-flex';
+                  continueBtn.textContent = 'Finish Lesson & Collect Star ⭐';
+                  continueBtn.onclick = () => {
+                    self.finishScenario();
+                  };
+                }
+              }, 'customer_horse');
+            }, 600);
+          }, 'learner');
+        });
+      }
+    },
+
     handleOptionSelect: function (opt, btnElement, turn) {
       const feedbackCard = document.getElementById('etiquette-feedback-card');
       const feedbackTitle = document.getElementById('etiquette-title');
@@ -566,7 +1061,7 @@
       if (!feedbackCard) return;
 
       // Speak chosen phrase
-      SpeechAudio.speak(opt.korean, 'ko-KR');
+      SpeechAudio.speak(opt.korean, 'ko-KR', null, 'learner');
 
       if (opt.isCorrect) {
         btnElement.classList.add('correct');
@@ -580,6 +1075,7 @@
         feedbackCard.style.display = 'flex';
 
         continueBtn.style.display = 'inline-flex';
+        continueBtn.textContent = 'Continue ▶';
         continueBtn.onclick = () => {
           this.presentTurn(this.currentTurnIndex + 1);
         };
@@ -918,15 +1414,34 @@
       const avatarContainer = document.getElementById('onboard-avatar-options');
       if (avatarContainer) {
         avatarContainer.innerHTML = '';
-        DEFAULT_AVATARS.forEach((av, i) => {
+        PROCEDURAL_AVATAR_OPTIONS.forEach((opt, i) => {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = `avatar-opt ${i === 0 ? 'selected' : ''}`;
-          btn.textContent = av;
+
+          let avatarVal = opt.emoji;
+          let svgContent = '';
+          if (opt.type === 'voxel' && typeof AvatarEngine !== 'undefined') {
+            avatarVal = `seed:${opt.seed}`;
+            svgContent = AvatarEngine.renderCharacterAvatar(opt.seed);
+          } else if (opt.type === 'companion' && typeof AvatarEngine !== 'undefined') {
+            avatarVal = `companion:${opt.style}:${opt.seed}`;
+            svgContent = AvatarEngine.renderCompanionAvatar(opt.style, opt.seed);
+          }
+
+          if (i === 0) {
+            this.selectedAvatar = avatarVal;
+          }
+
+          btn.innerHTML = `
+            <div class="avatar-opt-svg">${svgContent || opt.emoji}</div>
+            <span class="avatar-opt-label">${opt.name.split(' ')[0]}</span>
+          `;
+
           btn.onclick = () => {
             document.querySelectorAll('#onboard-avatar-options .avatar-opt').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            this.selectedAvatar = av;
+            this.selectedAvatar = avatarVal;
           };
           avatarContainer.appendChild(btn);
         });
@@ -1470,6 +1985,30 @@
       }
     },
 
+    renderAvatarToElement: function (elem, avatarValue, fallbackEmoji = '🧑') {
+      if (!elem) return;
+      if (typeof avatarValue === 'string' && avatarValue.startsWith('seed:')) {
+        const seed = avatarValue.replace('seed:', '');
+        if (typeof AvatarEngine !== 'undefined') {
+          elem.innerHTML = AvatarEngine.renderCharacterAvatar(seed);
+          return;
+        }
+      } else if (typeof avatarValue === 'string' && avatarValue.startsWith('companion:')) {
+        const parts = avatarValue.replace('companion:', '').split(':');
+        const style = parts[0] || 'critters';
+        const seed = parts[1] || 'cat';
+        if (typeof AvatarEngine !== 'undefined') {
+          elem.innerHTML = AvatarEngine.renderCompanionAvatar(style, seed);
+          return;
+        }
+      }
+      if (typeof avatarValue === 'string' && avatarValue.trim().startsWith('<svg')) {
+        elem.innerHTML = avatarValue;
+        return;
+      }
+      elem.textContent = avatarValue || fallbackEmoji;
+    },
+
     updateHeaderProfile: function () {
       const profile = ProfileManager.getActiveProfile();
       if (!profile) return;
@@ -1479,7 +2018,9 @@
       const starsElem = document.getElementById('header-stars');
       const quizStarsElem = document.getElementById('quiz-stars-display');
 
-      if (avatarElem) avatarElem.textContent = profile.avatar;
+      if (avatarElem) {
+        this.renderAvatarToElement(avatarElem, profile.avatar, '🐯');
+      }
       if (nameElem) nameElem.textContent = profile.name;
       if (starsElem) starsElem.textContent = `⭐ ${profile.stars || 0}`;
       if (quizStarsElem) quizStarsElem.textContent = `⭐ Stars: ${profile.stars || 0}`;
@@ -1509,9 +2050,15 @@
           this.showToast(`Switched profile to ${p.name}!`);
         };
 
+        const avatarSvgHtml = (p.avatar && p.avatar.startsWith('seed:'))
+          ? AvatarEngine.renderCharacterAvatar(p.avatar.replace('seed:', ''))
+          : (p.avatar && p.avatar.startsWith('companion:'))
+            ? AvatarEngine.renderCompanionAvatar(p.avatar.replace('companion:', '').split(':')[0], p.avatar.replace('companion:', '').split(':')[1])
+            : p.avatar;
+
         row.innerHTML = `
           <div class="profile-row-info">
-            <span class="profile-row-avatar">${p.avatar}</span>
+            <span class="profile-row-avatar">${avatarSvgHtml}</span>
             <div class="profile-row-details">
               <span class="profile-row-name">${p.name}</span>
               <span class="profile-row-stars">⭐ ${p.stars || 0} stars</span>

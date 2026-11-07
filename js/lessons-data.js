@@ -68,10 +68,19 @@ const LESSONS_DATA = [
         "name": "Teacher Park (박 선생님)",
         "role": "Teacher",
         "avatar": "👩‍🏫",
-        "relationshipLevel": "polite_formal"
+        "relationshipLevel": "polite_formal",
+        "avatarSeed": "TeacherPark",
+        "voice": {
+          "pitch": 1.1,
+          "rate": 0.85
+        }
       },
       "learner": {
-        "role": "Student"
+        "role": "Student",
+        "voice": {
+          "pitch": 1.3,
+          "rate": 0.9
+        }
       }
     },
     "scenario": {
@@ -238,7 +247,60 @@ const LESSONS_DATA = [
         "emoji": "6️⃣",
         "fact": "Sometimes pronounced as 'ryuk' in certain compound phrases."
       }
-    ]
+    ],
+    "scene": {
+      "location": "Village Fruit Market",
+      "backgroundTheme": "market-stall",
+      "illustration": "🍎",
+      "context": "A friendly market customer with a gentle companion horse approaches the fresh fruit stand looking for a healthy snack!"
+    },
+    "characters": {
+      "npc": {
+        "id": "customer_horse",
+        "name": "Market Customer & Horse (말과 손님)",
+        "role": "Customer",
+        "avatar": "🐴",
+        "avatarSeed": "horse",
+        "companionSeed": "horse",
+        "voice": {
+          "pitch": 0.85,
+          "rate": 0.85
+        },
+        "relationshipLevel": "polite_formal"
+      },
+      "learner": {
+        "role": "Fruit Stand Helper",
+        "voice": {
+          "pitch": 1.2,
+          "rate": 0.9
+        }
+      }
+    },
+    "scenario": {
+      "type": "interactive_counter",
+      "initialTurnId": "turn-counter-1",
+      "targetItem": "apple",
+      "targetCount": 3,
+      "turns": [
+        {
+          "id": "turn-counter-1",
+          "speaker": "customer_horse",
+          "speech": {
+            "korean": "말한테 줄 사과 세 개 주세요.",
+            "phonetic": "Mal-han-te jul sa-gwa se gae ju-se-yo.",
+            "english": "Please give me 3 apples for the horse."
+          },
+          "prompt": "Count and add 3 red apples to the wooden tray for the horse!",
+          "isCounterTurn": true
+        }
+      ],
+      "completion": {
+        "badge": "🐴",
+        "title": "Visual Counter & Apple Order Mastered!",
+        "summary": "You counted three crisp apples (하나, 둘, 셋) and happily fed the companion horse with 여기 있어요!",
+        "rewardText": "⭐ Scenario Mastered (+1 Star)"
+      }
+    }
   },
   {
     "id": "lesson-3",
@@ -446,7 +508,57 @@ const LESSONS_DATA = [
         "emoji": "🐟",
         "fact": "Literally translates to 'water meat' ('mul' = water, 'gogi' = meat)!"
       }
-    ]
+    ],
+    "scene": {
+      "location": "Sunny Neighborhood Park",
+      "backgroundTheme": "park-green",
+      "illustration": "🐾",
+      "context": "You are strolling in the neighborhood park when Teacher Park stops by with a cheerful smile to ask about your pets!"
+    },
+    "characters": {
+      "npc": {
+        "id": "teacher_park",
+        "name": "Teacher Park (박 선생님)",
+        "role": "Teacher",
+        "avatar": "👩‍🏫",
+        "avatarSeed": "TeacherPark",
+        "voice": {
+          "pitch": 1.1,
+          "rate": 0.85
+        },
+        "relationshipLevel": "polite_formal"
+      },
+      "learner": {
+        "role": "Student",
+        "voice": {
+          "pitch": 1.3,
+          "rate": 0.9
+        }
+      }
+    },
+    "scenario": {
+      "type": "pet_customizer",
+      "initialTurnId": "turn-pet-1",
+      "turns": [
+        {
+          "id": "turn-pet-1",
+          "speaker": "teacher_park",
+          "speech": {
+            "korean": "어떤 반려동물이 있어요?",
+            "phonetic": "Eo-tteon ban-ryeo-dong-mul-i i-sseo-yo?",
+            "english": "What kind of pet do you have?"
+          },
+          "prompt": "Customize your pet (animal & color) and say the matching Korean sentence to Teacher Park!",
+          "isCustomizerTurn": true
+        }
+      ],
+      "completion": {
+        "badge": "🐾",
+        "title": "Pet Introduction Mastered!",
+        "summary": "You customized your companion pet and introduced it proudly in polite Korean (존댓말)!",
+        "rewardText": "⭐ Scenario Mastered (+1 Star)"
+      }
+    }
   },
   {
     "id": "lesson-7",

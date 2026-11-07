@@ -1852,3 +1852,526 @@ button {
     height: 48px;
   }
 }
+
+
+/* ==========================================================================
+   ADVANCED SCENARIOS & DICEBEAR VOXEL STYLES
+   ========================================================================== */
+
+/* DiceBear SVG Avatar Container Styling */
+.profile-avatar-badge svg,
+.speaker-avatar-bubble svg,
+.avatar-opt svg,
+.profile-row-avatar svg {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  display: block;
+}
+
+.speaker-avatar-bubble.npc-interactive {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 3px solid #93c5fd;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+  overflow: hidden;
+}
+
+.profile-avatar-badge {
+  overflow: hidden;
+}
+
+/* Character Avatar Picker in Onboarding Modal */
+.avatar-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.avatar-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-opt:hover {
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+}
+
+.avatar-opt.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.avatar-opt-svg {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.avatar-opt-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* --- Scenario A: Pet Customizer Layout --- */
+.pet-customizer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.pet-stage-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+  border: 2px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pet-avatar-wrapper {
+  width: 110px;
+  height: 110px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 3px solid #86efac;
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pet-avatar-wrapper.pet-bounce {
+  animation: petBounce 0.5s ease-out;
+}
+
+@keyframes petBounce {
+  0% { transform: scale(0.8) rotate(-6deg); }
+  50% { transform: scale(1.15) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.pet-avatar-wrapper svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pet-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pet-korean-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #166534;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.pet-english-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.pet-saved-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #059669;
+  background: #d1fae5;
+  padding: 3px 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.pet-controls-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.pet-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pet-selector-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pet-choice-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pet-chip-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pet-chip-btn:hover {
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+.pet-chip-btn.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.pet-chip-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.pet-sentence-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+}
+
+.pet-sentence-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.pet-sentence-kr {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e293b;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.pet-sentence-phonetic {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.pet-sentence-en {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.pet-action-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* --- Scenario B: Interactive Visual Counter Layout --- */
+.counter-scenario-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.counter-stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffbeb;
+  border: 2px solid #fde68a;
+  border-radius: 14px;
+  padding: 12px 18px;
+}
+
+.counter-horse-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.counter-horse-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #f59e0b;
+  padding: 4px;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.counter-horse-avatar.horse-cheer {
+  animation: horseCheer 0.6s ease infinite alternate;
+}
+
+@keyframes horseCheer {
+  0% { transform: scale(1) rotate(-5deg); }
+  100% { transform: scale(1.15) rotate(5deg); }
+}
+
+.counter-horse-speech {
+  display: flex;
+  flex-direction: column;
+}
+
+.counter-horse-label {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #92400e;
+}
+
+.counter-horse-request {
+  font-size: 0.85rem;
+  color: #78350f;
+  font-weight: 600;
+}
+
+.counter-progress-badge {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #fcd34d;
+}
+
+/* Wooden Tray Area */
+.counter-tray-section {
+  background: #fef7ee;
+  border: 3px dashed #d97706;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  min-height: 140px;
+  justify-content: center;
+}
+
+.counter-tray-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.counter-tray-slots {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.counter-tray-slot {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px dashed #fcd34d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.counter-tray-slot.filled {
+  border-style: solid;
+  border-color: #10b981;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.counter-slot-emoji {
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.counter-slot-korean-count {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #047857;
+  margin-top: 2px;
+}
+
+.counter-tray-remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fruit Stand Market Pantry */
+.counter-market-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.counter-shelf-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.counter-shelf-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.counter-item-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.counter-item-btn:hover {
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.counter-item-btn:active {
+  transform: scale(0.96);
+}
+
+.counter-item-icon {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.counter-item-name-kr {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1e293b;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.counter-item-name-en {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.counter-feedback-banner {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.counter-feedback-banner.gentle-warn {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.counter-feedback-banner.success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.counter-submit-bar {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .pet-controls-row {
+    grid-template-columns: 1fr;
+  }
+  .counter-shelf-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pet-stage-display {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
