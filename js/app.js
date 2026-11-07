@@ -259,10 +259,13 @@
           status: 'started',
           cardsViewed: [wordIndex],
           quizStreak: 0,
-          quizPassed: false
+          quizPassed: false,
+          stars: 0,
+          highScore: 0
         };
       } else {
         const prog = profile.lessonProgress[lessonId];
+        if (!prog.cardsViewed) prog.cardsViewed = [];
         if (!prog.cardsViewed.includes(wordIndex)) {
           prog.cardsViewed.push(wordIndex);
         }
@@ -273,36 +276,85 @@
       this.save();
     },
 
-    recordQuizSuccess: function (lessonId) {
+    recordQuizCompletion: function (lessonId, score, totalQuestions) {
       const profile = this.getActiveProfile();
-      if (!profile) return { isNewlyCompleted: false, totalStars: 0 };
+      if (!profile) {
+        return {
+          roundScore: score,
+          totalQuestions: totalQuestions,
+          starsAwarded: 0,
+          lessonStars: 0,
+          totalStars: 0,
+          isNewlyCompleted: false
+        };
+      }
 
-      profile.stars = (profile.stars || 0) + 1;
+      // Calculate round stars: 5/5 = 3 stars, 3-4 = 2 stars, 1-2 = 1 star, 0 = 0
+      let starsAwarded = 0;
+      if (score >= 5) {
+        starsAwarded = 3;
+      } else if (score >= 3) {
+        starsAwarded = 2;
+      } else if (score >= 1) {
+        starsAwarded = 1;
+      }
 
       if (!profile.lessonProgress[lessonId]) {
         profile.lessonProgress[lessonId] = {
           status: 'started',
           cardsViewed: [],
-          quizStreak: 1,
-          quizPassed: false
+          quizStreak: score,
+          quizPassed: score >= 3,
+          stars: 0,
+          highScore: 0
         };
-      } else {
-        const prog = profile.lessonProgress[lessonId];
-        prog.quizStreak = (prog.quizStreak || 0) + 1;
       }
 
       const prog = profile.lessonProgress[lessonId];
-      let isNewlyCompleted = false;
+      if (typeof prog.stars !== 'number') prog.stars = 0;
+      if (typeof prog.highScore !== 'number') prog.highScore = 0;
 
-      // Completion criteria: cards viewed >= 1 and quizStreak >= 5
-      if (prog.quizStreak >= 5 && prog.status !== 'completed') {
-        prog.quizPassed = true;
+      // Update highest score and per-lesson stars
+      if (score > prog.highScore) {
+        prog.highScore = score;
+      }
+      if (starsAwarded > prog.stars) {
+        prog.stars = starsAwarded;
+      }
+
+      let isNewlyCompleted = false;
+      // Mark completed if at least 3 correct or 2+ stars earned
+      if (score >= 3 && prog.status !== 'completed') {
         prog.status = 'completed';
+        prog.quizPassed = true;
         isNewlyCompleted = true;
       }
 
+      // Recalculate global profile stars from all lessons (ensuring consistency)
+      let sumStars = 0;
+      Object.keys(profile.lessonProgress).forEach(id => {
+        sumStars += (profile.lessonProgress[id].stars || 0);
+      });
+      profile.stars = sumStars;
+
       this.save();
-      return { isNewlyCompleted, totalStars: profile.stars, streak: prog.quizStreak };
+
+      return {
+        roundScore: score,
+        totalQuestions: totalQuestions,
+        starsAwarded: starsAwarded,
+        lessonStars: prog.stars,
+        totalStars: profile.stars,
+        isNewlyCompleted: isNewlyCompleted
+      };
+    },
+
+    getLessonStars: function (lessonId) {
+      const profile = this.getActiveProfile();
+      if (!profile || !profile.lessonProgress[lessonId]) {
+        return 0;
+      }
+      return profile.lessonProgress[lessonId].stars || 0;
     },
 
     getLessonStatus: function (lessonId) {
@@ -417,21 +469,53 @@
   const QuizEngine = {
     currentLessonId: null,
     currentWord: null,
-    sessionStars: 0,
+    questions: [],
+    questionIndex: 0,
+    roundLength: 5,
+    roundScore: 0,
+    isSubmitting: false,
 
     initQuiz: function (lesson) {
       this.currentLessonId = lesson.id;
-      this.nextQuestion(lesson);
+      this.roundScore = 0;
+      this.questionIndex = 0;
+      this.isSubmitting = false;
+
+      // Ensure quiz question view is visible and results view hidden
+      UIController.showQuizQuestionView();
+
+      // Build 5 randomized questions from lesson words
+      const words = [...lesson.words];
+      words.sort(() => 0.5 - Math.random());
+
+      // If lesson has fewer words than 5, repeat or use what's available
+      let questionList = words.slice(0, 5);
+      if (questionList.length < 5 && words.length > 0) {
+        while (questionList.length < 5) {
+          const extra = words[Math.floor(Math.random() * words.length)];
+          questionList.push(extra);
+        }
+      }
+
+      this.questions = questionList;
+      this.roundLength = this.questions.length;
+
+      this.presentQuestion(lesson);
     },
 
-    nextQuestion: function (lesson) {
-      const words = lesson.words;
-      const targetWord = words[Math.floor(Math.random() * words.length)];
+    presentQuestion: function (lesson) {
+      if (this.questionIndex >= this.roundLength) {
+        this.finishRound(lesson);
+        return;
+      }
+
+      this.isSubmitting = false;
+      const targetWord = this.questions[this.questionIndex];
       this.currentWord = targetWord;
 
       // Select 3 distractors
       let pool = [];
-      words.forEach(w => {
+      lesson.words.forEach(w => {
         if (w.english !== targetWord.english) pool.push(w.english);
       });
 
@@ -447,17 +531,25 @@
         });
       }
 
-      // Shuffle pool and take 3
+      // Shuffle pool and pick 3
       pool.sort(() => 0.5 - Math.random());
       const distractors = pool.slice(0, 3);
 
       const options = [targetWord.english, ...distractors];
       options.sort(() => 0.5 - Math.random());
 
-      UIController.renderQuizQuestion(targetWord, options);
+      UIController.renderQuizQuestion(
+        targetWord,
+        options,
+        this.questionIndex + 1,
+        this.roundLength
+      );
     },
 
     submitAnswer: function (selectedEnglish, btnElement, lesson) {
+      if (this.isSubmitting) return;
+      this.isSubmitting = true;
+
       const isCorrect = selectedEnglish === this.currentWord.english;
       const allButtons = document.querySelectorAll('.quiz-opt-btn');
       allButtons.forEach(b => (b.disabled = true));
@@ -466,23 +558,15 @@
 
       if (isCorrect) {
         btnElement.classList.add('correct');
-        this.sessionStars += 1;
-
-        const result = ProfileManager.recordQuizSuccess(this.currentLessonId);
+        this.roundScore += 1;
 
         feedback.textContent = '🎉 Great job! Correct meaning!';
         feedback.style.color = '#15803d';
 
-        UIController.updateHeaderProfile();
-        UIController.updateSidebarLessons();
-
-        if (result.isNewlyCompleted) {
-          UIController.showToast(`⭐ Lesson Completed! Excellent work!`);
-        }
-
         setTimeout(() => {
-          this.nextQuestion(lesson);
-        }, 1200);
+          this.questionIndex += 1;
+          this.presentQuestion(lesson);
+        }, 1100);
       } else {
         btnElement.classList.add('wrong');
         allButtons.forEach(b => {
@@ -495,9 +579,23 @@
         feedback.style.color = '#b91c1c';
 
         setTimeout(() => {
-          this.nextQuestion(lesson);
-        }, 1700);
+          this.questionIndex += 1;
+          this.presentQuestion(lesson);
+        }, 1500);
       }
+    },
+
+    finishRound: function (lesson) {
+      const results = ProfileManager.recordQuizCompletion(
+        this.currentLessonId,
+        this.roundScore,
+        this.roundLength
+      );
+
+      UIController.updateHeaderProfile();
+      UIController.updateSidebarLessons();
+      UIController.updateLessonBannerStars(lesson.id);
+      UIController.renderQuizResults(results, lesson);
     }
   };
 
@@ -697,6 +795,31 @@
           }
         }
       });
+
+      // Quiz Completion Card Buttons
+      const nextLessonBtn = document.getElementById('quiz-next-lesson-btn');
+      if (nextLessonBtn) {
+        nextLessonBtn.addEventListener('click', () => {
+          this.advanceToNextLesson();
+        });
+      }
+
+      const retakeQuizBtn = document.getElementById('quiz-retake-btn');
+      if (retakeQuizBtn) {
+        retakeQuizBtn.addEventListener('click', () => {
+          const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+          if (lesson) {
+            QuizEngine.initQuiz(lesson);
+          }
+        });
+      }
+
+      const reviewCardsBtn = document.getElementById('quiz-review-cards-btn');
+      if (reviewCardsBtn) {
+        reviewCardsBtn.addEventListener('click', () => {
+          this.switchTab('cards');
+        });
+      }
     },
 
     loadLesson: function (lessonIndex) {
@@ -726,6 +849,8 @@
         badgeElem.textContent = this.formatStatusLabel(status);
       }
 
+      this.updateLessonBannerStars(lesson.id);
+
       // Render views
       this.updateCardView();
       this.renderVocabGrid(lesson);
@@ -743,6 +868,28 @@
         sidebar.classList.remove('open');
         backdrop.classList.remove('open');
       }
+    },
+
+    advanceToNextLesson: function () {
+      const totalLessons = LessonRepository.count();
+      if (this.currentLessonIndex + 1 < totalLessons) {
+        this.loadLesson(this.currentLessonIndex + 1);
+        this.switchTab('cards');
+        this.showToast(`Ready for Lesson ${this.currentLessonIndex + 1}! Let's go! 🚀`);
+      } else {
+        // Last lesson reached: wrap around to Lesson 1 or congratulate
+        this.loadLesson(0);
+        this.switchTab('cards');
+        this.showToast('🎉 You completed the curriculum! Starting review at Lesson 1!');
+      }
+    },
+
+    updateLessonBannerStars: function (lessonId) {
+      const starsElem = document.getElementById('lesson-banner-stars');
+      if (!starsElem) return;
+      const lessonStars = ProfileManager.getLessonStars(lessonId);
+      starsElem.textContent = `⭐ ${lessonStars}/3`;
+      starsElem.title = `${lessonStars} of 3 Stars earned in this lesson`;
     },
 
     updateCardView: function () {
@@ -873,10 +1020,22 @@
       }
     },
 
-    renderQuizQuestion: function (word, options) {
+    showQuizQuestionView: function () {
+      const qContainer = document.getElementById('quiz-question-container');
+      const rContainer = document.getElementById('quiz-results-container');
+      if (qContainer) qContainer.style.display = 'block';
+      if (rContainer) rContainer.style.display = 'none';
+    },
+
+    renderQuizQuestion: function (word, options, questionNumber, totalQuestions) {
+      this.showQuizQuestionView();
+
       const krTarget = document.getElementById('quiz-kr-text');
       const feedback = document.getElementById('quiz-feedback-msg');
       const container = document.getElementById('quiz-options-container');
+      const roundIndicator = document.getElementById('quiz-round-indicator');
+      const progressFill = document.getElementById('quiz-progress-fill');
+      const starsDisplay = document.getElementById('quiz-stars-display');
 
       if (krTarget) krTarget.textContent = word.korean;
       if (feedback) {
@@ -884,9 +1043,23 @@
         feedback.style.color = '#64748b';
       }
 
+      if (roundIndicator) {
+        roundIndicator.textContent = `Question ${questionNumber} of ${totalQuestions}`;
+      }
+
+      if (progressFill) {
+        const percent = ((questionNumber - 1) / totalQuestions) * 100;
+        progressFill.style.width = `${percent}%`;
+      }
+
+      const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+      if (starsDisplay && lesson) {
+        const stars = ProfileManager.getLessonStars(lesson.id);
+        starsDisplay.textContent = `⭐ Lesson Stars: ${stars}/3`;
+      }
+
       if (container) {
         container.innerHTML = '';
-        const lesson = LessonRepository.getLesson(this.currentLessonIndex);
         options.forEach(opt => {
           const btn = document.createElement('button');
           btn.type = 'button';
@@ -901,6 +1074,45 @@
       const quizSoundBtn = document.getElementById('quiz-sound-mini');
       if (quizSoundBtn) {
         quizSoundBtn.onclick = () => SpeechAudio.speak(word.korean, 'ko-KR');
+      }
+    },
+
+    renderQuizResults: function (results, lesson) {
+      const qContainer = document.getElementById('quiz-question-container');
+      const rContainer = document.getElementById('quiz-results-container');
+      if (qContainer) qContainer.style.display = 'none';
+      if (rContainer) rContainer.style.display = 'block';
+
+      // Fill stats
+      const scoreElem = document.getElementById('quiz-result-score');
+      const starsElem = document.getElementById('quiz-result-stars');
+      const totalStarsElem = document.getElementById('quiz-result-total-stars');
+      const badgeElem = document.getElementById('quiz-result-badge');
+      const titleElem = document.getElementById('quiz-result-title');
+      const subElem = document.getElementById('quiz-result-subtitle');
+
+      if (scoreElem) scoreElem.textContent = `${results.roundScore} / ${results.totalQuestions}`;
+      
+      const starsIcons = results.starsAwarded > 0 
+        ? '⭐'.repeat(results.starsAwarded) 
+        : 'Keep practicing! 💪';
+      if (starsElem) starsElem.textContent = starsIcons;
+
+      if (totalStarsElem) totalStarsElem.textContent = `⭐ ${results.totalStars}`;
+
+      // Celebration tone based on performance
+      if (results.roundScore === results.totalQuestions) {
+        if (badgeElem) badgeElem.textContent = '🏆';
+        if (titleElem) titleElem.textContent = 'Perfect Score! 🌟';
+        if (subElem) subElem.textContent = `Flawless mastery of ${lesson.title}! You earned 3 Stars!`;
+      } else if (results.roundScore >= 3) {
+        if (badgeElem) badgeElem.textContent = '🎉';
+        if (titleElem) titleElem.textContent = 'Great Job! 👏';
+        if (subElem) subElem.textContent = `You know most of these words! You earned ${results.starsAwarded} Stars!`;
+      } else {
+        if (badgeElem) badgeElem.textContent = '🌱';
+        if (titleElem) titleElem.textContent = 'Good Practice! 💪';
+        if (subElem) subElem.textContent = 'Review the flashcards and try again to score 3 or more!';
       }
     },
 
@@ -938,11 +1150,14 @@
 
       allLessons.forEach((lesson, index) => {
         const status = ProfileManager.getLessonStatus(lesson.id);
+        const stars = ProfileManager.getLessonStars(lesson.id);
         if (status === 'completed') completedCount += 1;
 
         const navCard = document.createElement('div');
         navCard.className = `lesson-nav-card ${index === this.currentLessonIndex ? 'active' : ''}`;
         navCard.onclick = () => this.loadLesson(index);
+
+        const starsHtml = stars > 0 ? `<span class="lesson-nav-stars" title="${stars} of 3 stars earned">⭐ ${stars}/3</span>` : '';
 
         navCard.innerHTML = `
           <div class="lesson-nav-icon">${lesson.icon}</div>
@@ -950,7 +1165,10 @@
             <div class="lesson-nav-category">${lesson.category}</div>
             <div class="lesson-nav-title">${lesson.number}. ${lesson.title}</div>
           </div>
-          <span class="status-badge ${status}">${this.formatStatusLabel(status)}</span>
+          <div class="lesson-nav-meta">
+            ${starsHtml}
+            <span class="status-badge ${status}">${this.formatStatusLabel(status)}</span>
+          </div>
         `;
         container.appendChild(navCard);
       });

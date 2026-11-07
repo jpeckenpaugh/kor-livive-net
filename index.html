@@ -65,7 +65,8 @@
           <h2 class="lesson-heading" id="lesson-banner-title">👋 Essential Greetings</h2>
           <p class="lesson-desc" id="lesson-banner-desc">Start friendly conversations with everyday polite greetings.</p>
         </div>
-        <div>
+        <div class="lesson-banner-meta">
+          <span class="lesson-stars-badge" id="lesson-banner-stars" title="Stars earned in this lesson">⭐ 0/3</span>
           <span class="status-badge untouched" id="lesson-banner-status-badge">New</span>
         </div>
       </section>
@@ -134,23 +135,64 @@
       <!-- 2. QUIZ CHALLENGE VIEW -->
       <section id="quiz-view" class="view-section" role="tabpanel">
         <div class="quiz-wrapper">
-          <div class="quiz-score-row">
-            <span class="quiz-target-badge">Goal: 5 Correct for ⭐ Completion</span>
-            <span class="quiz-stars-count" id="quiz-stars-display">⭐ Stars: 0</span>
+          <!-- Active Question Container -->
+          <div id="quiz-question-container">
+            <div class="quiz-score-row">
+              <span class="quiz-round-indicator" id="quiz-round-indicator">Question 1 of 5</span>
+              <span class="quiz-stars-count" id="quiz-stars-display">⭐ Lesson Stars: 0/3</span>
+            </div>
+
+            <div class="progress-track quiz-track">
+              <div class="progress-fill quiz-progress-fill" id="quiz-progress-fill"></div>
+            </div>
+
+            <div class="quiz-question-prompt">What does this Korean word mean?</div>
+            
+            <div class="quiz-hangul-card">
+              <span id="quiz-kr-text">안녕하세요</span>
+              <button class="quiz-audio-mini" id="quiz-sound-mini" aria-label="Listen to quiz word" title="Listen">🔊</button>
+            </div>
+
+            <div class="quiz-options-grid" id="quiz-options-container">
+              <!-- Dynamically populated 4 options -->
+            </div>
+
+            <div class="quiz-feedback" id="quiz-feedback-msg">Pick the correct English translation!</div>
           </div>
 
-          <div class="quiz-question-prompt">What does this Korean word mean?</div>
-          
-          <div class="quiz-hangul-card">
-            <span id="quiz-kr-text">안녕하세요</span>
-            <button class="quiz-audio-mini" id="quiz-sound-mini" aria-label="Listen to quiz word" title="Listen">🔊</button>
-          </div>
+          <!-- Quiz Completion / Results Container (Hidden by default) -->
+          <div id="quiz-results-container" class="quiz-results-container" style="display: none;">
+            <div class="celebration-badge" id="quiz-result-badge">🏆</div>
+            <h3 class="quiz-result-title" id="quiz-result-title">Quiz Completed!</h3>
+            <p class="quiz-result-subtitle" id="quiz-result-subtitle">Awesome work practicing your Korean vocabulary!</p>
+            
+            <div class="quiz-result-stats">
+              <div class="result-stat-box">
+                <span class="stat-label">Round Score</span>
+                <span class="stat-val" id="quiz-result-score">5 / 5</span>
+              </div>
+              <div class="result-stat-box highlight">
+                <span class="stat-label">Stars Earned</span>
+                <span class="stat-val star-val" id="quiz-result-stars">⭐⭐⭐</span>
+              </div>
+              <div class="result-stat-box">
+                <span class="stat-label">Total Stars</span>
+                <span class="stat-val" id="quiz-result-total-stars">⭐ 3</span>
+              </div>
+            </div>
 
-          <div class="quiz-options-grid" id="quiz-options-container">
-            <!-- Dynamically populated 4 options -->
+            <div class="quiz-result-actions">
+              <button type="button" class="btn-primary quiz-action-btn" id="quiz-next-lesson-btn">
+                <span>Next Lesson</span> ▶
+              </button>
+              <button type="button" class="btn-secondary quiz-action-btn" id="quiz-retake-btn">
+                <span>Re-take Quiz</span> 🔄
+              </button>
+              <button type="button" class="btn-ghost quiz-action-btn" id="quiz-review-cards-btn">
+                <span>Review Flashcards</span> 🃏
+              </button>
+            </div>
           </div>
-
-          <div class="quiz-feedback" id="quiz-feedback-msg">Pick the correct English translation!</div>
         </div>
       </section>
 
