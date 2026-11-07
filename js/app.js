@@ -1,6 +1,6 @@
 /**
  * Korean Language Buddy - Main Application Logic
- * Modules: ProfileManager, SpeechAudio, ProgressManager, QuizEngine, UIController
+ * Modules: LessonRepository, ProfileManager, SpeechAudio, AutoPlayEngine, QuizEngine, UIController
  */
 
 (function () {
@@ -10,23 +10,155 @@
   const DEFAULT_AVATARS = ['🐯', '🐰', '🦊', '🐼', '🦁', '🐻'];
 
   /* ==========================================================================
-     1. SPEECH SYNTHESIS ENGINE
+     0. LESSON REPOSITORY (JSON LOADER WITH FALLBACK)
+     ========================================================================== */
+  const LessonRepository = {
+    lessons: [],
+    loaded: false,
+
+    load: async function () {
+      try {
+        const response = await fetch('data/lessons.json');
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status + ' ' + response.statusText);
+        }
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          this.lessons = data;
+          this.loaded = true;
+          return this.lessons;
+        }
+        throw new Error('Invalid JSON payload structure');
+      } catch (err) {
+        console.warn('LessonRepository: Fetch data/lessons.json failed or running via file:// protocol. Falling back to embedded LESSONS_DATA.', err);
+        if (typeof LESSONS_DATA !== 'undefined' && Array.isArray(LESSONS_DATA)) {
+          this.lessons = LESSONS_DATA;
+          this.loaded = true;
+          return this.lessons;
+        }
+        console.error('LessonRepository: No lesson data could be resolved.', err);
+        this.lessons = [];
+        return [];
+      }
+    },
+
+    getAll: function () {
+      return this.lessons;
+    },
+
+    getLesson: function (index) {
+      return this.lessons[index] || null;
+    },
+
+    count: function () {
+      return this.lessons.length;
+    }
+  };
+
+  /* ==========================================================================
+     1. SPEECH SYNTHESIS ENGINE (KOREAN + ENGLISH)
      ========================================================================== */
   const SpeechAudio = {
     supported: 'speechSynthesis' in window,
-    speak: function (text) {
+    voices: [],
+    voicesLoaded: false,
+
+    init: function () {
+      if (!this.supported) return;
+      this.populateVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => this.populateVoices();
+      }
+    },
+
+    populateVoices: function () {
+      if (!this.supported) return;
+      this.voices = window.speechSynthesis.getVoices() || [];
+      if (this.voices.length > 0) {
+        this.voicesLoaded = true;
+      }
+    },
+
+    getVoiceForLang: function (langPrefix) {
+      if (!this.supported) return null;
+      if (!this.voices || this.voices.length === 0) {
+        this.populateVoices();
+      }
+      const prefix = langPrefix.toLowerCase();
+      // 1. Prefer natural / local service voice with exact or starting lang match
+      const localMatch = this.voices.find(v => v.lang.toLowerCase().startsWith(prefix) && v.localService);
+      if (localMatch) return localMatch;
+
+      // 2. Any voice matching language code prefix
+      const anyMatch = this.voices.find(v => v.lang.toLowerCase().startsWith(prefix));
+      if (anyMatch) return anyMatch;
+
+      return null;
+    },
+
+    /**
+     * Speaks text in target language with callback support
+     * @param {string} text
+     * @param {string} lang 'ko-KR' | 'en-US'
+     * @param {Function|null} onEndCallback
+     */
+    speak: function (text, lang = 'ko-KR', onEndCallback = null) {
       if (!this.supported) {
         UIController.showToast('Sound playback is not supported on this browser.');
+        if (typeof onEndCallback === 'function') onEndCallback();
         return;
       }
+
       try {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ko-KR';
-        utterance.rate = 0.85; // gently paced for language learners
+        utterance.lang = lang;
+        // Natural learning speed: slightly slower for Korean learners, natural pace for English
+        utterance.rate = lang.startsWith('ko') ? 0.85 : 0.95;
+
+        const voice = this.getVoiceForLang(lang);
+        if (voice) {
+          utterance.voice = voice;
+        }
+
+        let callbackFired = false;
+        const triggerCallbackOnce = () => {
+          if (!callbackFired) {
+            callbackFired = true;
+            if (typeof onEndCallback === 'function') {
+              onEndCallback();
+            }
+          }
+        };
+
+        utterance.onend = () => triggerCallbackOnce();
+        utterance.onerror = (e) => {
+          // If canceled intentionally, onerror may fire
+          triggerCallbackOnce();
+        };
+
+        // Safety fallback timer in case speech synthesis engine hangs or onend fails to fire
+        const estimatedDurationMs = Math.max(1200, (text.length * 180) + 800);
+        setTimeout(() => {
+          if (!callbackFired && window.speechSynthesis.speaking) {
+            // still speaking or hung
+          }
+        }, estimatedDurationMs);
+
         window.speechSynthesis.speak(utterance);
       } catch (err) {
         console.error('Speech error:', err);
+        if (typeof onEndCallback === 'function') onEndCallback();
+      }
+    },
+
+    stop: function () {
+      if (this.supported) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {
+          console.warn('Speech cancellation error:', e);
+        }
       }
     }
   };
@@ -52,7 +184,6 @@
       }
 
       if (!this.data.profiles || this.data.profiles.length === 0) {
-        // Return false to prompt "Who is learning today?" onboarding
         return false;
       }
 
@@ -119,7 +250,6 @@
       return true;
     },
 
-    // Record card viewing
     recordCardView: function (lessonId, wordIndex) {
       const profile = this.getActiveProfile();
       if (!profile) return;
@@ -136,14 +266,13 @@
         if (!prog.cardsViewed.includes(wordIndex)) {
           prog.cardsViewed.push(wordIndex);
         }
-        if (prog.status === 'untouched') {
+        if (prog.status === 'untouched' || prog.status === 'new') {
           prog.status = 'started';
         }
       }
       this.save();
     },
 
-    // Record quiz correct answer
     recordQuizSuccess: function (lessonId) {
       const profile = this.getActiveProfile();
       if (!profile) return { isNewlyCompleted: false, totalStars: 0 };
@@ -186,7 +315,104 @@
   };
 
   /* ==========================================================================
-     3. QUIZ ENGINE
+     3. AUTO-PLAY ENGINE
+     ========================================================================== */
+  const AutoPlayEngine = {
+    isPlaying: false,
+    timerId: null,
+
+    start: function () {
+      if (this.isPlaying) return;
+      this.isPlaying = true;
+      UIController.updateAutoPlayUI(true);
+      this.playCurrentCard();
+    },
+
+    stop: function () {
+      if (!this.isPlaying) return;
+      this.isPlaying = false;
+      this.clearCurrentTimer();
+      SpeechAudio.stop();
+      UIController.updateAutoPlayUI(false);
+    },
+
+    toggle: function () {
+      if (this.isPlaying) {
+        this.stop();
+      } else {
+        this.start();
+      }
+    },
+
+    clearCurrentTimer: function () {
+      if (this.timerId) {
+        clearTimeout(this.timerId);
+        this.timerId = null;
+      }
+    },
+
+    playCurrentCard: function () {
+      if (!this.isPlaying) return;
+
+      const lesson = LessonRepository.getLesson(UIController.currentLessonIndex);
+      if (!lesson || !lesson.words || lesson.words.length === 0) {
+        this.stop();
+        return;
+      }
+
+      const word = lesson.words[UIController.currentWordIndex];
+
+      // 1. Ensure card shows Front face (Korean)
+      UIController.setCardFlipped(false);
+
+      // 2. Speak Korean word
+      SpeechAudio.speak(word.korean, 'ko-KR', () => {
+        if (!this.isPlaying) return;
+
+        // 3. Pause 600ms before flip
+        this.timerId = setTimeout(() => {
+          if (!this.isPlaying) return;
+
+          // 4. Flip to Back face (English)
+          UIController.setCardFlipped(true);
+
+          // Give CSS 3D transform 400ms to reveal before speaking English
+          this.timerId = setTimeout(() => {
+            if (!this.isPlaying) return;
+
+            // 5. Speak English translation
+            SpeechAudio.speak(word.english, 'en-US', () => {
+              if (!this.isPlaying) return;
+
+              // 6. Pause 1200ms for learner retention
+              this.timerId = setTimeout(() => {
+                if (!this.isPlaying) return;
+
+                // Check if this was the last word of the lesson
+                const isLastWord = UIController.currentWordIndex >= lesson.words.length - 1;
+
+                if (isLastWord) {
+                  // End of lesson reached
+                  this.stop();
+                  UIController.setCardFlipped(false);
+                  UIController.showToast('🎉 Awesome! You completed all cards in this lesson!');
+                } else {
+                  // Advance to next word (unflipped) and continue cycle
+                  UIController.nextCard(false); // don't flip yet
+                  this.timerId = setTimeout(() => {
+                    this.playCurrentCard();
+                  }, 400);
+                }
+              }, 1200);
+            });
+          }, 400);
+        }, 600);
+      });
+    }
+  };
+
+  /* ==========================================================================
+     4. QUIZ ENGINE
      ========================================================================== */
   const QuizEngine = {
     currentLessonId: null,
@@ -205,14 +431,14 @@
 
       // Select 3 distractors
       let pool = [];
-      // Prefer other words in the current lesson
       words.forEach(w => {
         if (w.english !== targetWord.english) pool.push(w.english);
       });
 
       // If pool is small, supplement from all lessons in curriculum
-      if (pool.length < 3 && typeof LESSONS_DATA !== 'undefined') {
-        LESSONS_DATA.forEach(les => {
+      const allLessons = LessonRepository.getAll();
+      if (pool.length < 3 && allLessons.length > 0) {
+        allLessons.forEach(les => {
           les.words.forEach(w => {
             if (w.english !== targetWord.english && !pool.includes(w.english)) {
               pool.push(w.english);
@@ -276,7 +502,7 @@
   };
 
   /* ==========================================================================
-     4. UI CONTROLLER & APP ORCHESTRATION
+     5. UI CONTROLLER & APP ORCHESTRATION
      ========================================================================== */
   const UIController = {
     currentLessonIndex: 0,
@@ -284,8 +510,12 @@
     activeTab: 'cards', // 'cards' | 'quiz' | 'all'
     selectedAvatar: DEFAULT_AVATARS[0],
 
-    init: function () {
+    init: async function () {
+      SpeechAudio.init();
       this.bindEvents();
+
+      // Load curriculum data from JSON with fallback
+      await LessonRepository.load();
 
       const hasProfiles = ProfileManager.init();
       if (!hasProfiles) {
@@ -314,7 +544,10 @@
       // Profile Pill Click -> Switcher Modal
       const profilePill = document.getElementById('profile-pill-btn');
       if (profilePill) {
-        profilePill.addEventListener('click', () => this.openProfileSwitcherModal());
+        profilePill.addEventListener('click', () => {
+          AutoPlayEngine.stop();
+          this.openProfileSwitcherModal();
+        });
       }
 
       // Avatar selection in onboarding modal
@@ -362,20 +595,69 @@
         });
       }
 
-      // Card Flip
+      // Card Flip via click
       const card = document.getElementById('flashcard');
       if (card) {
-        card.addEventListener('click', () => this.flipCard());
+        card.addEventListener('click', (e) => {
+          // If clicking an inner interactive audio button, avoid double toggling
+          if (e.target.closest('#card-audio-en-btn')) {
+            return;
+          }
+          if (AutoPlayEngine.isPlaying) {
+            AutoPlayEngine.stop();
+          }
+          this.flipCard();
+        });
+      }
+
+      // Back Face English audio button
+      const backEnBtn = document.getElementById('card-audio-en-btn');
+      if (backEnBtn) {
+        backEnBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (AutoPlayEngine.isPlaying) {
+            AutoPlayEngine.stop();
+          }
+          this.speakCurrentWordEnglish();
+        });
       }
 
       // Navigation Buttons
       const nextBtn = document.getElementById('card-next-btn');
       const prevBtn = document.getElementById('card-prev-btn');
       const audioBtn = document.getElementById('card-audio-btn');
+      const ctrlAudioEnBtn = document.getElementById('card-ctrl-audio-en-btn');
+      const autoPlayBtn = document.getElementById('card-autoplay-btn');
 
-      if (nextBtn) nextBtn.addEventListener('click', () => this.nextCard());
-      if (prevBtn) prevBtn.addEventListener('click', () => this.prevCard());
-      if (audioBtn) audioBtn.addEventListener('click', () => this.speakCurrentWord());
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          AutoPlayEngine.stop();
+          this.nextCard();
+        });
+      }
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          AutoPlayEngine.stop();
+          this.prevCard();
+        });
+      }
+      if (audioBtn) {
+        audioBtn.addEventListener('click', () => {
+          AutoPlayEngine.stop();
+          this.speakCurrentWordKorean();
+        });
+      }
+      if (ctrlAudioEnBtn) {
+        ctrlAudioEnBtn.addEventListener('click', () => {
+          AutoPlayEngine.stop();
+          this.speakCurrentWordEnglish();
+        });
+      }
+      if (autoPlayBtn) {
+        autoPlayBtn.addEventListener('click', () => {
+          AutoPlayEngine.toggle();
+        });
+      }
 
       // Tabs
       const tabBtns = document.querySelectorAll('.mode-tabs .tab-btn');
@@ -386,14 +668,31 @@
         });
       });
 
+      // Window blur & Visibility change: safely stop auto-play and audio
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && AutoPlayEngine.isPlaying) {
+          AutoPlayEngine.stop();
+        }
+      });
+      window.addEventListener('blur', () => {
+        if (AutoPlayEngine.isPlaying) {
+          AutoPlayEngine.stop();
+        }
+      });
+
       // Keyboard navigation (Left/Right arrows, Spacebar flip)
       window.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
         if (this.activeTab === 'cards') {
-          if (e.key === 'ArrowRight') this.nextCard();
-          else if (e.key === 'ArrowLeft') this.prevCard();
-          else if (e.key === ' ') {
+          if (e.key === 'ArrowRight') {
+            AutoPlayEngine.stop();
+            this.nextCard();
+          } else if (e.key === 'ArrowLeft') {
+            AutoPlayEngine.stop();
+            this.prevCard();
+          } else if (e.key === ' ') {
             e.preventDefault();
+            AutoPlayEngine.stop();
             this.flipCard();
           }
         }
@@ -401,11 +700,13 @@
     },
 
     loadLesson: function (lessonIndex) {
-      if (typeof LESSONS_DATA === 'undefined' || !LESSONS_DATA[lessonIndex]) return;
+      const lesson = LessonRepository.getLesson(lessonIndex);
+      if (!lesson) return;
+
+      AutoPlayEngine.stop();
 
       this.currentLessonIndex = lessonIndex;
       this.currentWordIndex = 0;
-      const lesson = LESSONS_DATA[lessonIndex];
 
       // Update banner
       const numElem = document.getElementById('lesson-banner-number');
@@ -445,7 +746,9 @@
     },
 
     updateCardView: function () {
-      const lesson = LESSONS_DATA[this.currentLessonIndex];
+      const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+      if (!lesson || !lesson.words || !lesson.words[this.currentWordIndex]) return;
+
       const word = lesson.words[this.currentWordIndex];
 
       const card = document.getElementById('flashcard');
@@ -479,30 +782,74 @@
       this.updateSidebarLessons();
     },
 
+    setCardFlipped: function (flipped) {
+      const card = document.getElementById('flashcard');
+      if (!card) return;
+      if (flipped) {
+        card.classList.add('is-flipped');
+      } else {
+        card.classList.remove('is-flipped');
+      }
+    },
+
     flipCard: function () {
       const card = document.getElementById('flashcard');
       if (card) card.classList.toggle('is-flipped');
     },
 
-    nextCard: function () {
-      const lesson = LESSONS_DATA[this.currentLessonIndex];
+    nextCard: function (resetFlip = true) {
+      const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+      if (!lesson) return;
       this.currentWordIndex = (this.currentWordIndex + 1) % lesson.words.length;
       this.updateCardView();
+      if (!resetFlip) {
+        this.setCardFlipped(false);
+      }
     },
 
     prevCard: function () {
-      const lesson = LESSONS_DATA[this.currentLessonIndex];
+      const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+      if (!lesson) return;
       this.currentWordIndex = (this.currentWordIndex - 1 + lesson.words.length) % lesson.words.length;
       this.updateCardView();
     },
 
-    speakCurrentWord: function () {
-      const lesson = LESSONS_DATA[this.currentLessonIndex];
+    speakCurrentWordKorean: function () {
+      const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+      if (!lesson) return;
       const word = lesson.words[this.currentWordIndex];
-      SpeechAudio.speak(word.korean);
+      SpeechAudio.speak(word.korean, 'ko-KR');
+    },
+
+    speakCurrentWordEnglish: function () {
+      const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+      if (!lesson) return;
+      const word = lesson.words[this.currentWordIndex];
+      SpeechAudio.speak(word.english, 'en-US');
+    },
+
+    updateAutoPlayUI: function (isPlaying) {
+      const btn = document.getElementById('card-autoplay-btn');
+      const card = document.getElementById('flashcard');
+
+      if (btn) {
+        btn.classList.toggle('playing', isPlaying);
+        const icon = btn.querySelector('.autoplay-icon');
+        const label = btn.querySelector('.autoplay-label');
+        if (icon) icon.textContent = isPlaying ? '⏹' : '▶';
+        if (label) label.textContent = isPlaying ? 'Stop' : 'Auto';
+        btn.setAttribute('aria-label', isPlaying ? 'Stop Auto-Play' : 'Start Auto-Play');
+      }
+
+      if (card) {
+        card.classList.toggle('is-autoplay-active', isPlaying);
+      }
     },
 
     switchTab: function (tabId) {
+      // Always stop active auto-play when switching views
+      AutoPlayEngine.stop();
+
       this.activeTab = tabId;
 
       document.querySelectorAll('.mode-tabs .tab-btn').forEach(btn => {
@@ -518,8 +865,8 @@
       } else if (tabId === 'quiz') {
         const quizView = document.getElementById('quiz-view');
         if (quizView) quizView.classList.add('active');
-        const lesson = LESSONS_DATA[this.currentLessonIndex];
-        QuizEngine.initQuiz(lesson);
+        const lesson = LessonRepository.getLesson(this.currentLessonIndex);
+        if (lesson) QuizEngine.initQuiz(lesson);
       } else if (tabId === 'all') {
         const allView = document.getElementById('all-view');
         if (allView) allView.classList.add('active');
@@ -539,7 +886,7 @@
 
       if (container) {
         container.innerHTML = '';
-        const lesson = LESSONS_DATA[this.currentLessonIndex];
+        const lesson = LessonRepository.getLesson(this.currentLessonIndex);
         options.forEach(opt => {
           const btn = document.createElement('button');
           btn.type = 'button';
@@ -553,7 +900,7 @@
       // Quiz Sound Button
       const quizSoundBtn = document.getElementById('quiz-sound-mini');
       if (quizSoundBtn) {
-        quizSoundBtn.onclick = () => SpeechAudio.speak(word.korean);
+        quizSoundBtn.onclick = () => SpeechAudio.speak(word.korean, 'ko-KR');
       }
     },
 
@@ -569,7 +916,7 @@
           this.currentWordIndex = index;
           this.switchTab('cards');
           this.updateCardView();
-          SpeechAudio.speak(w.korean);
+          SpeechAudio.speak(w.korean, 'ko-KR');
         };
         card.innerHTML = `
           <div class="vocab-card-emoji">${w.emoji}</div>
@@ -583,12 +930,13 @@
 
     updateSidebarLessons: function () {
       const container = document.getElementById('sidebar-lessons-list');
-      if (!container || typeof LESSONS_DATA === 'undefined') return;
+      const allLessons = LessonRepository.getAll();
+      if (!container || allLessons.length === 0) return;
 
       container.innerHTML = '';
       let completedCount = 0;
 
-      LESSONS_DATA.forEach((lesson, index) => {
+      allLessons.forEach((lesson, index) => {
         const status = ProfileManager.getLessonStatus(lesson.id);
         if (status === 'completed') completedCount += 1;
 
@@ -609,7 +957,7 @@
 
       const progElem = document.getElementById('sidebar-curriculum-progress');
       if (progElem) {
-        progElem.textContent = `${completedCount} / ${LESSONS_DATA.length} Done`;
+        progElem.textContent = `${completedCount} / ${allLessons.length} Done`;
       }
     },
 
@@ -617,7 +965,9 @@
       switch (status) {
         case 'completed': return 'Completed ⭐';
         case 'started': return 'In Progress';
-        default: return 'Untouched';
+        case 'untouched':
+        case 'new':
+        default: return 'New';
       }
     },
 
@@ -705,9 +1055,11 @@
 
   // Expose to window for inline onclick handlers if needed
   window.App = {
+    LessonRepository,
     UIController,
     ProfileManager,
     SpeechAudio,
+    AutoPlayEngine,
     QuizEngine
   };
 

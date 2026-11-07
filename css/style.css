@@ -315,7 +315,8 @@ button {
   flex-shrink: 0;
 }
 
-.status-badge.untouched {
+.status-badge.untouched,
+.status-badge.new {
   background: #f1f5f9;
   color: #64748b;
 }
@@ -454,6 +455,21 @@ button {
   transform: rotateY(180deg);
 }
 
+/* Pulsing Auto-Play Active Ring */
+.card.is-autoplay-active {
+  box-shadow: 0 0 0 4px #3b82f6, 0 0 25px rgba(59, 130, 246, 0.45);
+  animation: autoplay-pulse 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes autoplay-pulse {
+  0% {
+    box-shadow: 0 0 0 3px #3b82f6, 0 0 15px rgba(59, 130, 246, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 6px #60a5fa, 0 0 30px rgba(96, 165, 250, 0.6);
+  }
+}
+
 .card-face {
   position: absolute;
   width: 100%;
@@ -523,11 +539,44 @@ button {
   margin-bottom: 4px;
 }
 
+.card-english-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 .card-english {
   font-size: 2.2rem;
   font-weight: 700;
   color: #d97706;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+}
+
+.card-audio-en-btn {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(217, 119, 6, 0.15);
+}
+
+.card-audio-en-btn:hover {
+  background: #fde68a;
+  transform: scale(1.1);
+}
+
+.card-audio-en-btn:active {
+  transform: scale(0.95);
 }
 
 .card-tip {
@@ -546,8 +595,11 @@ button {
 .card-controls {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 18px;
+  max-width: 520px;
 }
 
 .ctrl-btn {
@@ -565,11 +617,11 @@ button {
 }
 
 .ctrl-nav-btn {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   background: white;
   color: #1e3a8a;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
 }
@@ -583,15 +635,65 @@ button {
 .ctrl-audio-btn {
   background: var(--sun);
   color: #78350f;
-  padding: 12px 26px;
-  font-size: 1.05rem;
-  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  gap: 6px;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
 }
 
 .ctrl-audio-btn:hover {
   background: #fbbf24;
   transform: translateY(-2px);
+}
+
+.ctrl-audio-en-btn {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.15);
+}
+
+.ctrl-audio-en-btn:hover {
+  background: #bae6fd;
+  color: #075985;
+  transform: translateY(-2px);
+}
+
+.ctrl-autoplay-btn {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1.5px solid #a7f3d0;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.ctrl-autoplay-btn:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  transform: translateY(-2px);
+}
+
+.ctrl-autoplay-btn.playing {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.ctrl-autoplay-btn.playing:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.ctrl-autoplay-btn.paused {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
 }
 
 .progress-track {

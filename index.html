@@ -66,7 +66,7 @@
           <p class="lesson-desc" id="lesson-banner-desc">Start friendly conversations with everyday polite greetings.</p>
         </div>
         <div>
-          <span class="status-badge untouched" id="lesson-banner-status-badge">Untouched</span>
+          <span class="status-badge untouched" id="lesson-banner-status-badge">New</span>
         </div>
       </section>
 
@@ -98,7 +98,12 @@
             <div class="card-face card-back">
               <span class="card-emoji" id="card-back-emoji">👋</span>
               <span class="card-label">English Meaning</span>
-              <div class="card-english" id="card-english-text">Hello / Hi</div>
+              <div class="card-english-row">
+                <div class="card-english" id="card-english-text">Hello / Hi</div>
+                <button type="button" class="card-audio-en-btn" id="card-audio-en-btn" aria-label="Listen to English pronunciation" title="Listen in English">
+                  <span>🔊</span>
+                </button>
+              </div>
               <div class="card-tip" id="card-fact-text">💡 The most common polite greeting in Korea. Give a gentle nod or bow as you say it!</div>
             </div>
           </div>
@@ -107,8 +112,14 @@
         <!-- Controls -->
         <div class="card-controls">
           <button class="ctrl-btn ctrl-nav-btn" id="card-prev-btn" aria-label="Previous word" title="Previous word (Left arrow)">◀</button>
-          <button class="ctrl-btn ctrl-audio-btn" id="card-audio-btn" aria-label="Listen to pronunciation">
-            <span>🔊</span> Listen
+          <button class="ctrl-btn ctrl-audio-btn" id="card-audio-btn" aria-label="Listen to Korean pronunciation" title="Listen in Korean">
+            <span>🔊</span> Korean
+          </button>
+          <button class="ctrl-btn ctrl-audio-en-btn" id="card-ctrl-audio-en-btn" aria-label="Listen to English pronunciation" title="Listen in English">
+            <span>🗣️</span> English
+          </button>
+          <button class="ctrl-btn ctrl-autoplay-btn" id="card-autoplay-btn" aria-label="Start Auto-Play" title="Auto-Play card loop">
+            <span class="autoplay-icon">▶</span> <span class="autoplay-label">Auto</span>
           </button>
           <button class="ctrl-btn ctrl-nav-btn" id="card-next-btn" aria-label="Next word" title="Next word (Right arrow)">▶</button>
         </div>
