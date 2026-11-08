@@ -1230,8 +1230,9 @@
     renderPlayer(ctx) {
       const p = this.player;
       const t = this.gameTime;
-      const characterHeight = 52;
-      const avatarSize = 50;
+      const playerHeight = Math.round(TILE * 1.72); // ~82px (matching pp-livive-net)
+      const playerWidth = Math.round(playerHeight * (128 / 128)); // ~82px
+      const characterHeight = playerHeight;
 
       // 1. Calculate procedural locomotion / idle transform from pp-livive-net animation profile
       let translateY = 0;
@@ -1245,7 +1246,7 @@
       if (p.moving) {
         // Step-hop arc when walking: const hop = Math.sin(walkT * Math.PI); translateY: -hop * 6px;
         const hop = Math.sin(p.walkT * Math.PI);
-        translateY = -characterHeight * 0.12 * hop; // ~6px hop
+        translateY = -characterHeight * 0.12 * hop; // ~10px hop
         // Foot-step bob & slight side-to-side sway / step wobble
         rotate = Math.sin(p.walkT * Math.PI * 2) * (3.0 * Math.PI / 180);
         scaleX = 1 - 0.04 * hop;
@@ -1283,7 +1284,7 @@
       ctx.globalAlpha = 0.42 * shadowScale;
       ctx.fillStyle = ITEM_SHADOW;
       ctx.beginPath();
-      ctx.ellipse(0, 14, 15 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 14, 18 * shadowScale, 8 * shadowScale, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
@@ -1301,7 +1302,7 @@
         if (p.facing === 'right') {
           ctx.scale(-1, 1);
         }
-        ctx.drawImage(currentImg, -avatarSize / 2, -avatarSize + 12, avatarSize, avatarSize);
+        ctx.drawImage(currentImg, -playerWidth / 2, -playerHeight + 8, playerWidth, playerHeight);
         ctx.restore();
       } else {
         // Fallback Pin
@@ -1309,21 +1310,20 @@
         ctx.translate(translateX, translateY);
         ctx.fillStyle = '#3b82f6';
         ctx.beginPath();
-        ctx.arc(0, -6, 14, 0, Math.PI * 2);
+        ctx.arc(0, -playerHeight / 2, 16, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#1d4ed8';
         ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px sans-serif';
+        ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🧑', 0, -2);
+        ctx.fillText('🧑', 0, -playerHeight / 2 + 5);
         ctx.restore();
       }
 
-      // 4. Polished rounded pill name badge with subtle drop shadow
-      this.drawNameplate(ctx, p.name, 0, -avatarSize + translateY + 2, false);
+      // Overhead nameplate removed per directive (already displayed in corner HUD)
 
       ctx.restore();
     }
@@ -1331,8 +1331,9 @@
     renderBot(ctx) {
       const b = this.bot;
       const t = this.gameTime;
-      const botHeight = 44;
-      const botSize = 42;
+      const botHeight = Math.round(TILE * 1.05); // ~50px (matching pp-livive-net COMPANION_HEIGHT)
+      const botWidth = botHeight; // ~50px
+      const characterHeight = botHeight;
 
       let translateY = 0;
       let translateX = 0;
@@ -1347,25 +1348,22 @@
         const rollCurve = Math.sin(b.rollT * Math.PI);
         const motorHum = Math.sin(t * 45) * 0.008;
         // Negative angle leans forward into movement direction
-        const forwardLean = -(5.2 * Math.PI / 180) * rollCurve;
+        const forwardLean = -(4.8 * Math.PI / 180) * rollCurve;
 
-        translateY = 0; // Stays firmly wheeled on the ground
+        translateY = 0; // Stays firmly wheeled on the ground!
         rotate = forwardLean;
         scaleX = 1 + 0.03 * rollCurve;
         scaleY = 1 - 0.025 * rollCurve + motorHum;
         shadowScale = 1.08;
       } else {
-        // Smooth floating levitation bob cycle + motor hum
-        const hoverWave = Math.sin(t * 3.2);
-        translateY = hoverWave * 3.5 - 2;
-        shadowScale = 1 - hoverWave * 0.12;
-
+        // Idle behavior matching pp-livive-net: wheels planted on the ground (no airborne float/hover!)
+        translateY = 0; // Stays on the ground!
         const stretchCycle = (t % 4.5) / 4.5;
         if (stretchCycle >= 0.68 && stretchCycle <= 0.88) {
           const progress = Math.sin(((stretchCycle - 0.68) / 0.20) * Math.PI);
-          translateY -= 0.03 * botHeight * progress;
+          translateY = -0.025 * characterHeight * progress; // subtle mechanical stretch
           scaleY = 1 + 0.03 * progress;
-          scaleX = 1 - 0.02 * progress;
+          scaleX = 1 - 0.015 * progress;
           frame = 'stretch';
         } else {
           const blinkCycle = (t % 3.4) / 3.4;
@@ -1387,7 +1385,7 @@
       ctx.globalAlpha = 0.35 * shadowScale;
       ctx.fillStyle = ITEM_SHADOW;
       ctx.beginPath();
-      ctx.ellipse(0, 14, 13 * shadowScale, 6 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 14, 15 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
@@ -1404,14 +1402,14 @@
         if (b.facing === 'right') {
           ctx.scale(-1, 1);
         }
-        ctx.drawImage(currentImg, -botSize / 2, -botSize + 10, botSize, botSize);
+        ctx.drawImage(currentImg, -botWidth / 2, -botHeight + 10, botWidth, botHeight);
         ctx.restore();
       } else {
         ctx.save();
         ctx.translate(translateX, translateY);
         ctx.fillStyle = '#10b981';
         ctx.beginPath();
-        ctx.arc(0, -6, 12, 0, Math.PI * 2);
+        ctx.arc(0, -botHeight / 2, 14, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#059669';
         ctx.lineWidth = 2;
@@ -1420,12 +1418,11 @@
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🤖', 0, -2);
+        ctx.fillText('🤖', 0, -botHeight / 2 + 4);
         ctx.restore();
       }
 
-      // Name badge
-      this.drawNameplate(ctx, b.name, 0, -botSize + translateY + 2, true);
+      // Overhead nameplate removed per directive (already displayed in corner HUD)
 
       ctx.restore();
     }
