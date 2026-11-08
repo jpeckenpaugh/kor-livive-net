@@ -13,6 +13,28 @@
 
   const TILE = 48;
   const ITEM_SHADOW = 'rgba(8, 14, 9, 0.35)';
+  const WORLD_SIZE = 64;
+
+  function hashString(value) {
+    let hash = 2166136261;
+    const text = String(value);
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function random() {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
 
   function roundRectPath(ctx, x, y, w, h, radius) {
     const r = Math.max(0, Math.min(radius, w / 2, h / 2));
@@ -100,203 +122,467 @@
     fillRoundRect(ctx, box.left + TILE * 0.16, box.baseY - TILE * 0.38, box.width - TILE * 0.32, TILE * 0.2, 4, colors.accent);
     fillRoundRect(ctx, box.left, box.baseY - TILE * 0.44, TILE * 0.12, TILE * 0.36, 4, colors.accent);
     fillRoundRect(ctx, box.right - TILE * 0.12, box.baseY - TILE * 0.44, TILE * 0.12, TILE * 0.36, 4, colors.accent);
-    fillRoundRect(ctx, box.left + 3, box.baseY - TILE * 0.08, TILE * 0.1, TILE * 0.08, 2, colors.trim);
-    fillRoundRect(ctx, box.right - TILE * 0.13, box.baseY - TILE * 0.08, TILE * 0.1, TILE * 0.08, 2, colors.trim);
-  }
-
-  function drawBed(ctx, box, colors) {
-    itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - box.height * 0.88, box.width, box.height * 0.88, 8, colors.trim);
-    fillRoundRect(ctx, box.left + 3, box.baseY - box.height * 0.84, box.width - 6, box.height * 0.8, 6, colors.base);
-    const blanketHeight = box.height * 0.56;
-    fillRoundRect(ctx, box.left + 3, box.baseY - blanketHeight, box.width - 6, blanketHeight, 5, colors.accent);
-    fillRoundRect(ctx, box.left + 3, box.baseY - blanketHeight, box.width - 6, TILE * 0.14, 3, colors.accent2 || '#e5e7eb');
-    fillRoundRect(ctx, box.left + TILE * 0.14, box.baseY - box.height * 0.8, box.width - TILE * 0.28, TILE * 0.22, 4, '#f8fafc');
-  }
-
-  function drawDesk(ctx, box, colors) {
-    itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left + 2, box.baseY - TILE * 0.44, box.width - 4, TILE * 0.16, 4, colors.base);
-    fillRoundRect(ctx, box.left, box.baseY - TILE * 0.48, box.width, TILE * 0.14, 4, colors.accent);
-    fillRoundRect(ctx, box.left + 4, box.baseY - TILE * 0.32, TILE * 0.1, TILE * 0.32, 2, colors.trim);
-    fillRoundRect(ctx, box.right - TILE * 0.14, box.baseY - TILE * 0.32, TILE * 0.1, TILE * 0.32, 2, colors.trim);
-    const laptopW = TILE * 0.38;
-    const laptopX = (box.left + box.right - laptopW) / 2;
-    fillRoundRect(ctx, laptopX, box.baseY - TILE * 0.46, laptopW, TILE * 0.1, 2, '#475569');
-    fillRoundRect(ctx, laptopX + 2, box.baseY - TILE * 0.62, laptopW - 4, TILE * 0.16, 2, '#38bdf8');
+    fillRoundRect(ctx, box.left + TILE * 0.12, box.baseY - TILE * 0.05, TILE * 0.08, TILE * 0.07, 2, colors.trim);
+    fillRoundRect(ctx, box.right - TILE * 0.2, box.baseY - TILE * 0.05, TILE * 0.08, TILE * 0.07, 2, colors.trim);
   }
 
   function drawCoffeeTable(ctx, box, colors) {
     itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - TILE * 0.3, box.width, TILE * 0.15, 6, colors.base);
-    fillRoundRect(ctx, box.left + 2, box.baseY - TILE * 0.32, box.width - 4, TILE * 0.08, 4, colors.accent);
-    fillRoundRect(ctx, box.left + 4, box.baseY - TILE * 0.18, TILE * 0.09, TILE * 0.18, 2, colors.trim);
-    fillRoundRect(ctx, box.right - TILE * 0.13, box.baseY - TILE * 0.18, TILE * 0.09, TILE * 0.18, 2, colors.trim);
+    const topY = box.baseY - TILE * 0.52;
+    fillRoundRect(ctx, box.left + TILE * 0.08, topY + TILE * 0.14, TILE * 0.07, TILE * 0.42, 2, colors.trim);
+    fillRoundRect(ctx, box.right - TILE * 0.15, topY + TILE * 0.14, TILE * 0.07, TILE * 0.42, 2, colors.trim);
+    fillRoundRect(ctx, box.left, topY, box.width, TILE * 0.16, 5, colors.accent);
+    fillRoundRect(ctx, box.left + 3, topY + TILE * 0.14, box.width - 6, TILE * 0.1, 3, colors.base);
   }
 
-  function drawNightstand(ctx, box, colors) {
+  function drawTv(ctx, box, colors) {
     itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - TILE * 0.42, box.width, TILE * 0.38, 4, colors.base);
-    fillRoundRect(ctx, box.left - 2, box.baseY - TILE * 0.46, box.width + 4, TILE * 0.1, 3, colors.accent);
-    fillRoundRect(ctx, box.left + 4, box.baseY - TILE * 0.34, box.width - 8, TILE * 0.11, 2, colors.trim);
-    fillRoundRect(ctx, box.left + 4, box.baseY - TILE * 0.2, box.width - 8, TILE * 0.11, 2, colors.trim);
-    fillRoundRect(ctx, (box.left + box.right) / 2 - 2, box.baseY - TILE * 0.3, 4, 3, 1, '#cbd5e1');
+    const centerX = (box.left + box.right) / 2;
+    const bodyWidth = Math.min(box.width * 0.88, TILE * 0.9);
+    const bodyHeight = TILE * 0.76;
+    const bodyX = centerX - bodyWidth / 2;
+    const bodyY = box.baseY - TILE * 0.12 - bodyHeight;
+    fillRoundRect(ctx, centerX - TILE * 0.2, box.baseY - TILE * 0.14, TILE * 0.4, TILE * 0.1, 3, colors.trim);
+    fillRoundRect(ctx, bodyX, bodyY, bodyWidth, bodyHeight, 6, colors.base);
+    fillRoundRect(ctx, bodyX + 4, bodyY + 4, bodyWidth - 16, bodyHeight - 10, 4, colors.accent);
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 1;
+    for (let line = 1; line <= 3; line += 1) {
+      const y = bodyY + 4 + ((bodyHeight - 10) * line) / 4;
+      ctx.beginPath();
+      ctx.moveTo(bodyX + 5, y);
+      ctx.lineTo(bodyX + bodyWidth - 13, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(bodyX + bodyWidth - 7, bodyY + bodyHeight * 0.36, 1.8, 0, Math.PI * 2);
+    ctx.fillStyle = colors.trim;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(bodyX + bodyWidth - 7, bodyY + bodyHeight * 0.6, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawRadio(ctx, box, colors) {
+    itemShadow(ctx, box);
+    const centerX = (box.left + box.right) / 2;
+    const bodyWidth = Math.min(box.width * 0.72, TILE * 0.66);
+    const bodyHeight = TILE * 0.46;
+    const bodyX = centerX - bodyWidth / 2;
+    const bodyY = box.baseY - TILE * 0.1 - bodyHeight;
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bodyX + bodyWidth * 0.2, bodyY + 2);
+    ctx.lineTo(bodyX + bodyWidth * 0.05, bodyY - TILE * 0.28);
+    ctx.stroke();
+    fillRoundRect(ctx, bodyX, bodyY, bodyWidth, bodyHeight, 5, colors.base);
+    ctx.beginPath();
+    ctx.arc(bodyX + bodyWidth * 0.3, bodyY + bodyHeight * 0.52, bodyHeight * 0.28, 0, Math.PI * 2);
+    ctx.fillStyle = colors.trim;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(bodyX + bodyWidth * 0.3, bodyY + bodyHeight * 0.52, bodyHeight * 0.16, 0, Math.PI * 2);
+    ctx.fillStyle = colors.accent;
+    ctx.fill();
+    fillRoundRect(ctx, bodyX + bodyWidth * 0.62, bodyY + bodyHeight * 0.22, bodyWidth * 0.24, bodyHeight * 0.16, 2, colors.accent);
+    fillRoundRect(ctx, bodyX + bodyWidth * 0.62, bodyY + bodyHeight * 0.5, bodyWidth * 0.24, bodyHeight * 0.16, 2, colors.trim);
+  }
+
+  function drawFloorLamp(ctx, box, colors) {
+    itemShadow(ctx, box);
+    const centerX = (box.left + box.right) / 2;
+    const topY = box.baseY - TILE * 1.14;
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = colors.accent;
+    ctx.beginPath();
+    ctx.ellipse(centerX, topY + TILE * 0.18, TILE * 0.34, TILE * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = Math.max(2, TILE * 0.045);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(centerX, box.baseY - TILE * 0.02);
+    ctx.lineTo(centerX, topY + TILE * 0.26);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(centerX, box.baseY, TILE * 0.16, TILE * 0.05, 0, 0, Math.PI * 2);
+    ctx.fillStyle = colors.trim;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(centerX - TILE * 0.2, topY + TILE * 0.26);
+    ctx.lineTo(centerX + TILE * 0.2, topY + TILE * 0.26);
+    ctx.lineTo(centerX + TILE * 0.13, topY);
+    ctx.lineTo(centerX - TILE * 0.13, topY);
+    ctx.closePath();
+    ctx.fillStyle = colors.accent;
+    ctx.fill();
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
 
   function drawBookshelf(ctx, box, colors) {
     itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - box.height * 0.9, box.width, box.height * 0.9, 4, colors.trim);
-    fillRoundRect(ctx, box.left + 3, box.baseY - box.height * 0.86, box.width - 6, box.height * 0.82, 3, colors.base);
-    const shelfCount = 3;
-    const shelfSpacing = (box.height * 0.76) / shelfCount;
-    for (let index = 0; index < shelfCount; index += 1) {
-      const shelfY = box.baseY - box.height * 0.82 + index * shelfSpacing;
-      fillRoundRect(ctx, box.left + 3, shelfY, box.width - 6, 4, 1, colors.accent);
-      const bookColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
-      let bx = box.left + 6;
-      while (bx < box.right - 10) {
-        const bw = 5 + (bx % 4);
-        const bh = shelfSpacing * 0.65 + (bx % 6);
-        const col = bookColors[(bx + index) % bookColors.length];
-        fillRoundRect(ctx, bx, shelfY - bh, bw, bh, 1, col);
-        bx += bw + 2;
+    const top = box.baseY - Math.min(box.height * 0.92, TILE * 1.82);
+    fillRoundRect(ctx, box.left, top, box.width, box.baseY - top, 4, colors.trim);
+    fillRoundRect(ctx, box.left + 3, top + 3, box.width - 6, box.baseY - top - 6, 2, colors.base);
+    const shelves = 3;
+    const shelfHeight = (box.baseY - top - 8) / shelves;
+    for (let row = 0; row < shelves; row += 1) {
+      const shelfY = top + 4 + row * shelfHeight;
+      ctx.beginPath();
+      ctx.moveTo(box.left + 4, shelfY + shelfHeight - 2);
+      ctx.lineTo(box.right - 4, shelfY + shelfHeight - 2);
+      ctx.strokeStyle = colors.trim;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      const bookWidth = (box.width - 12) / 4;
+      for (let book = 0; book < 4; book += 1) {
+        const height = shelfHeight * (0.42 + ((row + book) % 3) * 0.12);
+        fillRoundRect(
+          ctx,
+          box.left + 6 + book * bookWidth,
+          shelfY + shelfHeight - 3 - height,
+          bookWidth - 2,
+          height,
+          1,
+          book % 2 ? colors.accent : colors.trim
+        );
       }
     }
   }
 
-  function drawWardrobe(ctx, box, colors) {
-    itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - box.height * 0.92, box.width, box.height * 0.92, 4, colors.trim);
-    fillRoundRect(ctx, box.left + 3, box.baseY - box.height * 0.88, box.width - 6, box.height * 0.84, 3, colors.base);
-    const doorW = (box.width - 8) / 2;
-    fillRoundRect(ctx, box.left + 3, box.baseY - box.height * 0.86, doorW, box.height * 0.8, 2, colors.accent);
-    fillRoundRect(ctx, box.right - 3 - doorW, box.baseY - box.height * 0.86, doorW, box.height * 0.8, 2, colors.accent);
-    fillRoundRect(ctx, box.left + 3 + doorW - 4, box.baseY - box.height * 0.5, 3, 10, 1, '#f8fafc');
-    fillRoundRect(ctx, box.right - 3 - doorW + 1, box.baseY - box.height * 0.5, 3, 10, 1, '#f8fafc');
-  }
-
   function drawPlant(ctx, box, colors) {
     itemShadow(ctx, box);
-    const potW = box.width * 0.6;
-    const potX = (box.left + box.right - potW) / 2;
-    fillRoundRect(ctx, potX, box.baseY - TILE * 0.32, potW, TILE * 0.3, 4, colors.base);
-    fillRoundRect(ctx, potX - 2, box.baseY - TILE * 0.36, potW + 4, TILE * 0.08, 2, colors.accent);
-    const leafColors = ['#15803d', '#16a34a', '#22c55e', '#4ade80'];
-    const cx = (box.left + box.right) / 2;
-    const cy = box.baseY - TILE * 0.44;
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2;
-      const lx = cx + Math.cos(angle) * (TILE * 0.2);
-      const ly = cy + Math.sin(angle) * (TILE * 0.16);
-      ctx.fillStyle = leafColors[i % leafColors.length];
+    const centerX = (box.left + box.right) / 2;
+    const potTop = box.baseY - TILE * 0.34;
+    ctx.beginPath();
+    ctx.moveTo(centerX - TILE * 0.17, potTop);
+    ctx.lineTo(centerX + TILE * 0.17, potTop);
+    ctx.lineTo(centerX + TILE * 0.13, box.baseY - TILE * 0.02);
+    ctx.lineTo(centerX - TILE * 0.13, box.baseY - TILE * 0.02);
+    ctx.closePath();
+    ctx.fillStyle = colors.accent;
+    ctx.fill();
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.strokeStyle = colors.trim;
+    ctx.beginPath();
+    ctx.moveTo(centerX, potTop);
+    ctx.lineTo(centerX, potTop - TILE * 0.34);
+    ctx.stroke();
+    const leaves = [
+      { dx: -0.18, dy: -0.5, rx: 0.19, ry: 0.11, angle: -0.5, color: colors.base },
+      { dx: 0.17, dy: -0.44, rx: 0.19, ry: 0.11, angle: 0.5, color: colors.base },
+      { dx: -0.04, dy: -0.66, rx: 0.14, ry: 0.2, angle: -0.15, color: colors.trim },
+      { dx: 0.1, dy: -0.6, rx: 0.14, ry: 0.12, angle: 0.9, color: colors.base }
+    ];
+    for (const leaf of leaves) {
       ctx.beginPath();
-      ctx.ellipse(lx, ly, TILE * 0.14, TILE * 0.18, angle, 0, Math.PI * 2);
+      ctx.ellipse(
+        centerX + TILE * leaf.dx,
+        potTop + TILE * leaf.dy,
+        TILE * leaf.rx,
+        TILE * leaf.ry,
+        leaf.angle,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = leaf.color;
       ctx.fill();
     }
   }
 
-  function drawLamp(ctx, box, colors) {
+  function drawFridge(ctx, box, colors) {
     itemShadow(ctx, box);
-    const cx = (box.left + box.right) / 2;
-    fillRoundRect(ctx, cx - TILE * 0.12, box.baseY - TILE * 0.08, TILE * 0.24, TILE * 0.08, 2, colors.trim);
-    fillRoundRect(ctx, cx - 2, box.baseY - TILE * 0.72, 4, TILE * 0.66, 1, colors.accent);
-    fillRoundRect(ctx, cx - TILE * 0.2, box.baseY - TILE * 0.9, TILE * 0.4, TILE * 0.24, 4, colors.base);
-    // Warm light cone glow
+    const width = Math.min(box.width * 0.72, TILE * 0.7);
+    const height = TILE * 1.36;
+    const x = (box.left + box.right) / 2 - width / 2;
+    const y = box.baseY - height;
+    fillRoundRect(ctx, x, y, width, height, 5, colors.base);
+    fillRoundRect(ctx, x + 2, y + 2, width - 4, height * 0.32, 3, colors.accent);
+    ctx.beginPath();
+    ctx.moveTo(x + 2, y + height * 0.36);
+    ctx.lineTo(x + width - 2, y + height * 0.36);
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    fillRoundRect(ctx, x + width - TILE * 0.09, y + TILE * 0.08, TILE * 0.035, TILE * 0.2, 2, colors.trim);
+    fillRoundRect(ctx, x + width - TILE * 0.09, y + height * 0.44, TILE * 0.035, TILE * 0.26, 2, colors.trim);
+  }
+
+  function drawStove(ctx, box, colors) {
+    itemShadow(ctx, box);
+    const width = Math.min(box.width * 0.8, TILE * 0.76);
+    const height = TILE * 0.82;
+    const x = (box.left + box.right) / 2 - width / 2;
+    const y = box.baseY - height;
+    fillRoundRect(ctx, x, y, width, height, 4, colors.base);
+    fillRoundRect(ctx, x + 2, y + 2, width - 4, TILE * 0.16, 3, colors.accent);
+    for (let index = 0; index < 4; index += 1) {
+      const cx = x + width * (0.3 + (index % 2) * 0.4);
+      const cy = y + TILE * 0.16 * (index < 2 ? 0.45 : 1.05);
+      ctx.beginPath();
+      ctx.arc(cx, cy, TILE * 0.06, 0, Math.PI * 2);
+      ctx.strokeStyle = colors.trim;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    fillRoundRect(ctx, x + 4, y + TILE * 0.26, width - 8, height - TILE * 0.32, 3, colors.trim);
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    fillRoundRect(ctx, x + 7, y + TILE * 0.3, width - 14, height - TILE * 0.4, 2, colors.accent);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + TILE * 0.26);
+    ctx.lineTo(x + width - 8, y + TILE * 0.26);
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function drawCounter(ctx, box, colors) {
+    itemShadow(ctx, box);
+    const height = TILE * 0.76;
+    const y = box.baseY - height;
+    fillRoundRect(ctx, box.left, y, box.width, height, 3, colors.base);
+    fillRoundRect(ctx, box.left - 2, y - TILE * 0.04, box.width + 4, TILE * 0.14, 3, colors.accent);
+    const doors = Math.max(2, Math.round(box.width / TILE));
+    const doorWidth = box.width / doors;
+    for (let index = 0; index < doors; index += 1) {
+      strokeRoundRect(
+        ctx,
+        box.left + index * doorWidth + 3,
+        y + TILE * 0.16,
+        doorWidth - 6,
+        height - TILE * 0.2,
+        2,
+        colors.trim,
+        1.5
+      );
+      ctx.beginPath();
+      ctx.arc(box.left + (index + 1) * doorWidth - 6, y + height * 0.52, 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = colors.trim;
+      ctx.fill();
+    }
+  }
+
+  function drawDiningTable(ctx, box, colors) {
+    itemShadow(ctx, box);
+    const topX = box.left + TILE * 0.1;
+    const topW = box.width - TILE * 0.2;
+    const topY = box.top + TILE * 0.1;
+    const topH = Math.max(TILE * 0.5, box.height - TILE * 0.5);
+    const legTop = topY + topH - TILE * 0.06;
+    const legHeight = Math.max(TILE * 0.12, box.baseY - legTop + TILE * 0.06);
+    fillRoundRect(ctx, topX + TILE * 0.12, legTop, TILE * 0.11, legHeight, 2, colors.trim);
+    fillRoundRect(ctx, topX + topW - TILE * 0.23, legTop, TILE * 0.11, legHeight, 2, colors.trim);
+    fillRoundRect(ctx, topX, topY, topW, topH, 8, colors.accent);
+    strokeRoundRect(ctx, topX, topY, topW, topH, 8, colors.trim, 2);
     ctx.save();
     ctx.globalAlpha = 0.22;
-    ctx.fillStyle = '#fef08a';
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 1.5;
+    for (let line = 1; line <= 2; line += 1) {
+      const y = topY + (topH * line) / 3;
+      ctx.beginPath();
+      ctx.moveTo(topX + 6, y);
+      ctx.lineTo(topX + topW - 6, y);
+      ctx.stroke();
+    }
+    ctx.restore();
     ctx.beginPath();
-    ctx.ellipse(cx, box.baseY + 4, TILE * 0.48, TILE * 0.24, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      topX + topW / 2,
+      topY + topH / 2,
+      TILE * 0.26,
+      TILE * 0.12,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = colors.base;
     ctx.fill();
+    ctx.strokeStyle = colors.trim;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  function drawChair(ctx, box, colors) {
+    itemShadow(ctx, box);
+    const centerX = (box.left + box.right) / 2;
+    const seatWidth = Math.min(box.width * 0.62, TILE * 0.6);
+    const seatY = box.baseY - TILE * 0.42;
+    fillRoundRect(ctx, centerX - seatWidth / 2, box.baseY - TILE * 0.62, seatWidth, TILE * 0.2, 4, colors.trim);
+    fillRoundRect(ctx, centerX - seatWidth / 2, seatY, seatWidth, TILE * 0.2, 4, colors.base);
+    fillRoundRect(ctx, centerX - seatWidth / 2, box.baseY - TILE * 0.63, seatWidth, TILE * 0.1, 3, colors.accent);
+    fillRoundRect(ctx, centerX - seatWidth / 2 + 2, seatY + TILE * 0.18, TILE * 0.07, TILE * 0.2, 2, colors.trim);
+    fillRoundRect(ctx, centerX + seatWidth / 2 - TILE * 0.09, seatY + TILE * 0.18, TILE * 0.07, TILE * 0.2, 2, colors.trim);
+  }
+
+  function drawBed(ctx, box, colors) {
+    itemShadow(ctx, box);
+    fillRoundRect(ctx, box.left, box.top + TILE * 0.08, box.width, box.height - TILE * 0.16, 6, colors.trim);
+    fillRoundRect(ctx, box.left + 3, box.top + TILE * 0.16, box.width - 6, box.height - TILE * 0.3, 5, colors.accent);
+    fillRoundRect(ctx, box.left + 2, box.top + TILE * 0.14, box.width - 4, TILE * 0.16, 4, colors.trim);
+    const pillowWidth = (box.width - TILE * 0.42) / 2;
+    fillRoundRect(ctx, box.left + TILE * 0.16, box.top + TILE * 0.32, pillowWidth, TILE * 0.34, 6, colors.accent);
+    fillRoundRect(ctx, box.left + TILE * 0.26 + pillowWidth, box.top + TILE * 0.32, pillowWidth, TILE * 0.34, 6, colors.accent);
+    fillRoundRect(
+      ctx,
+      box.left + 3,
+      box.top + TILE * 0.78,
+      box.width - 6,
+      box.height - TILE * 0.92,
+      4,
+      colors.base
+    );
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.beginPath();
+    ctx.moveTo(box.left + 4, box.top + TILE * 0.8);
+    ctx.lineTo(box.right - 4, box.top + TILE * 0.8);
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 2;
+    ctx.stroke();
     ctx.restore();
   }
 
-  function drawTvStand(ctx, box, colors) {
+  function drawNightstand(ctx, box, colors) {
     itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - TILE * 0.36, box.width, TILE * 0.3, 4, colors.trim);
-    fillRoundRect(ctx, box.left + 3, box.baseY - TILE * 0.32, box.width - 6, TILE * 0.24, 3, colors.base);
-    const tvW = box.width * 0.8;
-    const tvX = (box.left + box.right - tvW) / 2;
-    fillRoundRect(ctx, tvX, box.baseY - TILE * 0.86, tvW, TILE * 0.48, 4, '#0f172a');
-    fillRoundRect(ctx, tvX + 3, box.baseY - TILE * 0.83, tvW - 6, TILE * 0.42, 2, '#1e293b');
-    // Subtle TV power LED
-    ctx.fillStyle = '#22c55e';
-    ctx.fillRect(tvX + tvW - 8, box.baseY - TILE * 0.42, 3, 3);
-  }
-
-  function drawKitchenCounter(ctx, box, colors) {
-    itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - TILE * 0.48, box.width, TILE * 0.42, 4, colors.base);
-    fillRoundRect(ctx, box.left - 1, box.baseY - TILE * 0.54, box.width + 2, TILE * 0.1, 2, colors.accent);
-    fillRoundRect(ctx, box.left + 3, box.baseY - TILE * 0.38, box.width - 6, TILE * 0.28, 2, colors.trim);
-    // Stove elements
-    ctx.fillStyle = '#334155';
-    const cx = box.left + box.width * 0.3;
+    const width = Math.min(box.width * 0.72, TILE * 0.68);
+    const height = TILE * 0.56;
+    const x = (box.left + box.right) / 2 - width / 2;
+    const y = box.baseY - height;
+    fillRoundRect(ctx, x, y, width, height, 3, colors.base);
+    fillRoundRect(ctx, x - 1, y - TILE * 0.03, width + 2, TILE * 0.08, 2, colors.accent);
+    strokeRoundRect(ctx, x + 4, y + TILE * 0.12, width - 8, height - TILE * 0.18, 2, colors.trim, 1.5);
     ctx.beginPath();
-    ctx.arc(cx, box.baseY - TILE * 0.5, 6, 0, Math.PI * 2);
-    ctx.arc(cx + 18, box.baseY - TILE * 0.5, 6, 0, Math.PI * 2);
+    ctx.arc(x + width / 2, y + height * 0.52, 1.8, 0, Math.PI * 2);
+    ctx.fillStyle = colors.accent;
     ctx.fill();
   }
 
-  function drawRefrigerator(ctx, box, colors) {
+  function drawDresser(ctx, box, colors) {
     itemShadow(ctx, box);
-    fillRoundRect(ctx, box.left, box.baseY - box.height * 0.95, box.width, box.height * 0.95, 5, colors.trim);
-    fillRoundRect(ctx, box.left + 2, box.baseY - box.height * 0.92, box.width - 4, box.height * 0.9, 4, colors.base);
-    fillRoundRect(ctx, box.left + 2, box.baseY - box.height * 0.48, box.width - 4, 3, 1, colors.accent);
-    fillRoundRect(ctx, box.left + 6, box.baseY - box.height * 0.65, 3, 18, 1, colors.accent);
-    fillRoundRect(ctx, box.left + 6, box.baseY - box.height * 0.35, 3, 20, 1, colors.accent);
+    const height = TILE * 0.62;
+    const y = box.baseY - height;
+    fillRoundRect(ctx, box.left, y, box.width, height, 3, colors.base);
+    fillRoundRect(ctx, box.left - 1, y - TILE * 0.04, box.width + 2, TILE * 0.1, 2, colors.accent);
+    const drawers = Math.max(2, Math.round(box.width / TILE));
+    const drawerWidth = box.width / drawers;
+    for (let index = 0; index < drawers; index += 1) {
+      strokeRoundRect(
+        ctx,
+        box.left + index * drawerWidth + 4,
+        y + TILE * 0.14,
+        drawerWidth - 8,
+        height - TILE * 0.2,
+        2,
+        colors.trim,
+        1.5
+      );
+      ctx.beginPath();
+      ctx.arc(box.left + (index + 0.5) * drawerWidth, y + height * 0.55, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = colors.accent;
+      ctx.fill();
+    }
   }
 
   function drawRugShape(ctx, bounds, colors) {
+    const inset = TILE * 0.08;
+    const x = bounds.left + inset;
+    const y = bounds.top + inset;
+    const w = bounds.width - inset * 2;
+    const h = bounds.height - inset * 2;
+    fillRoundRect(ctx, x, y, w, h, TILE * 0.26, colors.base);
+    strokeRoundRect(ctx, x + 2, y + 2, w - 4, h - 4, TILE * 0.24, colors.accent, Math.max(1.5, TILE * 0.035));
     ctx.save();
-    ctx.globalAlpha = 0.88;
-    fillRoundRect(ctx, bounds.left, bounds.top, bounds.width, bounds.height, 10, colors.base);
-    strokeRoundRect(ctx, bounds.left + 3, bounds.top + 3, bounds.width - 6, bounds.height - 6, 8, colors.accent, 2);
-    fillRoundRect(ctx, bounds.left + 7, bounds.top + 7, bounds.width - 14, bounds.height - 14, 6, colors.trim || colors.base);
+    ctx.globalAlpha = 0.5;
+    strokeRoundRect(
+      ctx,
+      x + TILE * 0.24,
+      y + TILE * 0.24,
+      w - TILE * 0.48,
+      h - TILE * 0.48,
+      TILE * 0.2,
+      colors.accent,
+      Math.max(1, TILE * 0.025)
+    );
     ctx.restore();
   }
 
   const FURNITURE_SHAPES = {
     couch: drawCouch,
     armchair: drawArmchair,
-    bed: drawBed,
-    desk: drawDesk,
-    coffeeTable: drawCoffeeTable,
-    nightstand: drawNightstand,
+    'coffee-table': drawCoffeeTable,
+    tv: drawTv,
+    radio: drawRadio,
+    'floor-lamp': drawFloorLamp,
     bookshelf: drawBookshelf,
-    wardrobe: drawWardrobe,
     plant: drawPlant,
-    lamp: drawLamp,
-    tvStand: drawTvStand,
-    kitchenCounter: drawKitchenCounter,
-    refrigerator: drawRefrigerator
+    fridge: drawFridge,
+    stove: drawStove,
+    counter: drawCounter,
+    'dining-table': drawDiningTable,
+    chair: drawChair,
+    bed: drawBed,
+    nightstand: drawNightstand,
+    dresser: drawDresser
   };
 
+
+  /* --- Cached Pre-rendered Textures --- */
   function buildTextures() {
     const floorCanvas = document.createElement('canvas');
     floorCanvas.width = TILE;
     floorCanvas.height = TILE;
     const fctx = floorCanvas.getContext('2d');
-    fctx.fillStyle = '#d7ba89';
+    fctx.fillStyle = '#b58c5a';
     fctx.fillRect(0, 0, TILE, TILE);
-    fctx.fillStyle = '#cda974';
-    fctx.fillRect(0, TILE - 2, TILE, 2);
-    fctx.fillRect(TILE - 2, 0, 2, TILE);
-    fctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    fctx.fillRect(2, 2, TILE - 4, 3);
+    const boards = 4;
+    const boardH = TILE / boards;
+    for (let i = 0; i < boards; i++) {
+      fctx.fillStyle = i % 2 === 0 ? 'rgba(255, 231, 190, 0.09)' : 'rgba(58, 36, 20, 0.09)';
+      fctx.fillRect(0, i * boardH, TILE, boardH);
+      fctx.strokeStyle = 'rgba(58, 38, 22, 0.38)';
+      fctx.lineWidth = 1.5;
+      fctx.beginPath();
+      fctx.moveTo(0, i * boardH + boardH);
+      fctx.lineTo(TILE, i * boardH + boardH);
+      fctx.stroke();
+      const joint = (i % 2 === 0 ? 0.3 : 0.7) * TILE;
+      fctx.beginPath();
+      fctx.moveTo(joint, i * boardH);
+      fctx.lineTo(joint, i * boardH + boardH);
+      fctx.stroke();
+    }
 
     const wallCanvas = document.createElement('canvas');
     wallCanvas.width = TILE;
     wallCanvas.height = TILE;
     const wctx = wallCanvas.getContext('2d');
-    wctx.fillStyle = '#475569';
+    wctx.fillStyle = '#4c392c';
     wctx.fillRect(0, 0, TILE, TILE);
-    wctx.fillStyle = '#334155';
-    wctx.fillRect(0, TILE - 6, TILE, 6);
-    wctx.fillStyle = '#64748b';
-    wctx.fillRect(0, 0, TILE, 3);
-    wctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-    wctx.fillRect(TILE / 2 - 1, 0, 2, TILE);
+    const rows = 4;
+    const bH = TILE / rows;
+    const bW = TILE / 3;
+    for (let r = 0; r < rows; r++) {
+      const off = r % 2 === 0 ? 0 : -bW / 2;
+      for (let c = -1; c <= 3; c++) {
+        const bx = c * bW + off + 2;
+        const by = r * bH + 2;
+        wctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 239, 214, 0.12)' : 'rgba(24, 18, 14, 0.16)';
+        wctx.fillRect(bx, by, bW - 4, bH - 4);
+      }
+    }
 
     const matCanvas = document.createElement('canvas');
     matCanvas.width = TILE;
@@ -307,7 +593,47 @@
     mctx.fillStyle = '#92400e';
     mctx.fillRect(4, 4, TILE - 8, TILE - 8);
 
-    return { floor: floorCanvas, wall: wallCanvas, mat: matCanvas };
+    // Grass tile variants (subtle blade flecks and color patches: #4b8750, #529358, #457d4a)
+    const grassColors = ['#4b8750', '#529358', '#457d4a'];
+    const grassTiles = [];
+    for (let v = 0; v < 3; v++) {
+      const gCanvas = document.createElement('canvas');
+      gCanvas.width = TILE;
+      gCanvas.height = TILE;
+      const gctx = gCanvas.getContext('2d');
+      gctx.fillStyle = grassColors[v];
+      gctx.fillRect(0, 0, TILE, TILE);
+
+      const rand = mulberry32(10007 + v * 997);
+      for (let i = 0; i < 18; i++) {
+        const gx = rand() * TILE;
+        const gy = rand() * TILE;
+        gctx.fillStyle = rand() > 0.5 ? 'rgba(192, 223, 120, 0.35)' : 'rgba(30, 65, 43, 0.35)';
+        gctx.fillRect(gx, gy, 2 + rand() * 2, 2 + rand() * 2);
+      }
+      grassTiles.push(gCanvas);
+    }
+
+    // Dirt path tile (#a17a52 with grain)
+    const dirtCanvas = document.createElement('canvas');
+    dirtCanvas.width = TILE;
+    dirtCanvas.height = TILE;
+    const dctx = dirtCanvas.getContext('2d');
+    dctx.fillStyle = '#a17a52';
+    dctx.fillRect(0, 0, TILE, TILE);
+    const drand = mulberry32(424242);
+    for (let i = 0; i < 20; i++) {
+      dctx.fillStyle = drand() > 0.5 ? 'rgba(84, 60, 52, 0.28)' : 'rgba(215, 185, 140, 0.28)';
+      dctx.fillRect(drand() * TILE, drand() * TILE, 2 + drand() * 3, 2 + drand() * 2);
+    }
+
+    return {
+      floor: floorCanvas,
+      wall: wallCanvas,
+      mat: matCanvas,
+      grass: grassTiles,
+      dirt: dirtCanvas
+    };
   }
 
   /* --- Multi-frame SVG generator for procedural facial expressions --- */
@@ -433,13 +759,135 @@
       this.solidBoxes = [];
       this.rugs = [];
       this.furniture = [];
+      this.scenery = [];
+      this.sceneryImages = {};
+      this.loadSceneryImages();
 
       this.initWorld();
     }
 
+    loadSceneryImages() {
+      if (typeof window !== 'undefined' && window.V2_SCENERY) {
+        for (const [key, uri] of Object.entries(window.V2_SCENERY)) {
+          const img = new Image();
+          img.src = uri;
+          this.sceneryImages[key] = img;
+        }
+      }
+    }
+
     initWorld() {
-      const maxX = this.house.width - 1;
-      const maxY = this.house.height - 1;
+      const houseX = this.house.x || 0;
+      const houseY = this.house.y || 0;
+      const maxX = houseX + this.house.width - 1;
+      const maxY = houseY + this.house.height - 1;
+
+      // 1. Build 64x64 terrain grid
+      this.grid = [];
+      for (let y = 0; y < WORLD_SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < WORLD_SIZE; x++) row.push('grass');
+        this.grid.push(row);
+      }
+
+      // Home room footprint
+      for (let y = houseY; y <= maxY; y++) {
+        for (let x = houseX; x <= maxX; x++) {
+          const onWall = x === houseX || x === maxX || y === houseY || y === maxY;
+          this.grid[y][x] = onWall ? 'home-wall' : 'home-floor';
+        }
+      }
+
+      // Doorway
+      if (this.door && this.door.y < WORLD_SIZE && this.door.x < WORLD_SIZE) {
+        this.grid[this.door.y][this.door.x] = 'home-floor';
+
+        // Dirt path south from door through yard
+        for (let y = this.door.y + 1; y <= Math.min(WORLD_SIZE - 1, this.door.y + 8); y++) {
+          for (let x = this.door.x - 1; x <= this.door.x + 1; x++) {
+            if (this.grid[y] && this.grid[y][x] === 'grass') {
+              this.grid[y][x] = 'dirt';
+            }
+          }
+        }
+      }
+
+      // 2. Perimeter walls as solid boxes
+      for (let y = houseY; y <= maxY; y++) {
+        for (let x = houseX; x <= maxX; x++) {
+          const isPerimeter = x === houseX || x === maxX || y === houseY || y === maxY;
+          const isDoor = x === this.door.x && y === this.door.y;
+          if (isPerimeter && !isDoor) {
+            this.solidBoxes.push({
+              left: x * TILE,
+              right: (x + 1) * TILE,
+              top: y * TILE,
+              bottom: (y + 1) * TILE
+            });
+          }
+        }
+      }
+
+      // 3. World bounds outer boundary collision (cannot walk outside 0..WORLD_SIZE)
+      this.solidBoxes.push({ left: -TILE * 4, right: 0, top: -TILE * 4, bottom: (WORLD_SIZE + 4) * TILE });
+      this.solidBoxes.push({ left: WORLD_SIZE * TILE, right: (WORLD_SIZE + 4) * TILE, top: -TILE * 4, bottom: (WORLD_SIZE + 4) * TILE });
+      this.solidBoxes.push({ left: -TILE * 4, right: (WORLD_SIZE + 4) * TILE, top: -TILE * 4, bottom: 0 });
+      this.solidBoxes.push({ left: -TILE * 4, right: (WORLD_SIZE + 4) * TILE, top: WORLD_SIZE * TILE, bottom: (WORLD_SIZE + 4) * TILE });
+
+      // 4. Generate outdoor scenery items
+      const sceneryRand = mulberry32(hashString('scenery:home-lot'));
+      const sceneryTypes = [
+        'apple-tree', 'puffy-tree', 'chestnut-tree',
+        'rounded-bush', 'flowering-bush', 'rock-boulder',
+        'mushroom', 'mushroom-cluster', 'flower-red', 'grass-tuft'
+      ];
+      const occupied = new Set();
+      for (let y = houseY; y <= maxY; y++) {
+        for (let x = houseX; x <= maxX; x++) occupied.add(x + ',' + y);
+      }
+      // Path clear in front of door
+      for (let y = this.door.y + 1; y <= this.door.y + 8; y++) {
+        for (let x = this.door.x - 1; x <= this.door.x + 1; x++) occupied.add(x + ',' + y);
+      }
+
+      const targetCount = 65;
+      let attempts = 0;
+      while (this.scenery.length < targetCount && attempts < 3000) {
+        attempts++;
+        const sx = Math.floor(sceneryRand() * WORLD_SIZE);
+        const sy = Math.floor(sceneryRand() * WORLD_SIZE);
+        const skey = sx + ',' + sy;
+        if (occupied.has(skey)) continue;
+        if (!this.grid[sy] || this.grid[sy][sx] !== 'grass') continue;
+
+        const stype = sceneryTypes[Math.floor(sceneryRand() * sceneryTypes.length)];
+        const isTree = stype.includes('tree');
+        const isBushOrRock = stype.includes('bush') || stype.includes('rock');
+        const scale = isTree ? (0.85 + sceneryRand() * 0.3) : isBushOrRock ? (0.8 + sceneryRand() * 0.25) : (0.75 + sceneryRand() * 0.3);
+        const isObstacle = isTree || stype === 'rock-boulder';
+
+        const sItem = {
+          id: 'scenery-' + this.scenery.length,
+          type: stype,
+          x: sx,
+          y: sy,
+          scale,
+          isObstacle
+        };
+        this.scenery.push(sItem);
+        occupied.add(skey);
+
+        // Solid obstacle collision for trees and boulders
+        if (isObstacle) {
+          const colInset = isTree ? 10 : 8;
+          this.solidBoxes.push({
+            left: sx * TILE + colInset,
+            right: (sx + 1) * TILE - colInset,
+            top: sy * TILE + colInset,
+            bottom: (sy + 1) * TILE - colInset
+          });
+        }
+      }
 
       // Perimeter walls as solid boxes
       for (let y = 0; y <= maxY; y++) {
@@ -459,29 +907,35 @@
 
       // Add furniture from layout
       for (const place of this.layout) {
-        const itemDef = this.items[place.item_id];
+        const itemId = place.itemId || place.item_id;
+        const itemDef = this.items[itemId];
         if (!itemDef) continue;
 
+        const itemW = itemDef.size?.w || itemDef.w || 1;
+        const itemH = itemDef.size?.h || itemDef.h || 1;
+        const placeX = typeof place.x === 'number' ? place.x : (houseX + (place.dx || 0));
+        const placeY = typeof place.y === 'number' ? place.y : (houseY + (place.dy || 0));
+
         const bounds = {
-          left: place.x * TILE,
-          top: place.y * TILE,
-          width: itemDef.w * TILE,
-          height: itemDef.h * TILE,
-          right: (place.x + itemDef.w) * TILE,
-          bottom: (place.y + itemDef.h) * TILE
+          left: placeX * TILE,
+          top: placeY * TILE,
+          width: itemW * TILE,
+          height: itemH * TILE,
+          right: (placeX + itemW) * TILE,
+          bottom: (placeY + itemH) * TILE
         };
 
         const pad = itemPad(bounds);
 
         if (itemDef.type === 'rug') {
           this.rugs.push({
-            id: place.item_id,
+            id: itemId,
             bounds,
             colors: itemDef.colors
           });
         } else {
           this.furniture.push({
-            id: place.item_id,
+            id: itemId,
             shape: itemDef.shape,
             colors: itemDef.colors,
             bounds,
@@ -489,7 +943,7 @@
           });
 
           // Solid collision if not passable
-          if (!itemDef.passable) {
+          if (itemDef.solid !== false && !itemDef.passable) {
             const inset = 6;
             this.solidBoxes.push({
               left: bounds.left + inset,
@@ -610,6 +1064,59 @@
       this.camera.y += (this.player.y - this.camera.y) * camLerp;
     }
 
+    drawSceneryItem(ctx, item) {
+      const img = this.sceneryImages[item.type];
+      if (!img || !img.complete) return;
+
+      const isTree = item.type.includes('tree');
+      const isBushOrRock = item.type.includes('bush') || item.type.includes('rock');
+
+      let baseW, baseH;
+      if (isTree) {
+        baseW = TILE * 2.5;
+        baseH = TILE * 3.0;
+      } else if (isBushOrRock) {
+        baseW = TILE * 1.5;
+        baseH = TILE * 1.4;
+      } else {
+        baseW = TILE * 0.8;
+        baseH = TILE * 0.8;
+      }
+
+      const width = baseW * (item.scale || 1);
+      const height = baseH * (item.scale || 1);
+
+      const footX = (item.x + 0.5) * TILE;
+      const footY = (item.y + 1) * TILE;
+
+      const BOTTOM_OFFSETS = {
+        'apple-tree': 0.148,
+        'chestnut-tree': 0.107,
+        'puffy-tree': 0.086,
+        'rounded-bush': 0.068,
+        'flowering-bush': 0.0,
+        'rock-boulder': 0.0,
+        'mushroom': 0.0,
+        'mushroom-cluster': 0.0,
+        'flower-red': 0.088,
+        'grass-tuft': 0.0
+      };
+      const bottomTrim = (BOTTOM_OFFSETS[item.type] || 0) * height;
+
+      // Scenery shadow for trees, rocks, bushes
+      if (isTree || isBushOrRock) {
+        ctx.save();
+        ctx.globalAlpha = 0.28;
+        ctx.fillStyle = ITEM_SHADOW;
+        ctx.beginPath();
+        ctx.ellipse(footX, footY - TILE * 0.05, width * 0.32, TILE * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.drawImage(img, footX - width / 2, footY - height + bottomTrim, width, height);
+    }
+
     render() {
       const ctx = this.ctx;
       const w = this.canvas.width;
@@ -623,25 +1130,37 @@
 
       ctx.save();
       // Apply Camera transform
-      ctx.translate(Math.round(w / 2 - this.camera.x), Math.round(h / 2 - this.camera.y));
+      const camX = Math.round(w / 2 - this.camera.x);
+      const camY = Math.round(h / 2 - this.camera.y);
+      ctx.translate(camX, camY);
 
-      // Draw Room Floor & Walls
-      const maxX = this.house.width - 1;
-      const maxY = this.house.height - 1;
+      // Camera view culling bounds in tile coordinates
+      const minTileX = Math.max(0, Math.floor((this.camera.x - w / 2) / TILE) - 2);
+      const maxTileX = Math.min(WORLD_SIZE - 1, Math.ceil((this.camera.x + w / 2) / TILE) + 2);
+      const minTileY = Math.max(0, Math.floor((this.camera.y - h / 2) / TILE) - 2);
+      const maxTileY = Math.min(WORLD_SIZE - 1, Math.ceil((this.camera.y + h / 2) / TILE) + 2);
 
-      for (let y = 0; y <= maxY; y++) {
-        for (let x = 0; x <= maxX; x++) {
-          const isPerimeter = x === 0 || x === maxX || y === 0 || y === maxY;
-          const isDoor = x === this.door.x && y === this.door.y;
+      // Draw World Terrain Tiles
+      for (let y = minTileY; y <= maxTileY; y++) {
+        for (let x = minTileX; x <= maxTileX; x++) {
+          const tile = this.grid ? this.grid[y][x] : 'grass';
           const px = x * TILE;
           const py = y * TILE;
 
-          if (isDoor) {
-            ctx.drawImage(this.textures.mat, px, py);
-          } else if (isPerimeter) {
+          if (tile === 'grass') {
+            const v = (x * 7 + y * 13) % 3;
+            ctx.drawImage(this.textures.grass[v], px, py);
+          } else if (tile === 'dirt') {
+            ctx.drawImage(this.textures.dirt, px, py);
+          } else if (tile === 'home-wall') {
             ctx.drawImage(this.textures.wall, px, py);
-          } else {
-            ctx.drawImage(this.textures.floor, px, py);
+          } else if (tile === 'home-floor') {
+            const isDoor = this.door && x === this.door.x && y === this.door.y;
+            if (isDoor) {
+              ctx.drawImage(this.textures.mat, px, py);
+            } else {
+              ctx.drawImage(this.textures.floor, px, py);
+            }
           }
         }
       }
@@ -651,7 +1170,7 @@
         drawRugShape(ctx, rug.bounds, rug.colors);
       }
 
-      // Gather renderables for Y-sorting: Furniture, Player, Bot
+      // Gather renderables for Y-sorting: Furniture, Scenery, Player, Bot
       const drawList = [];
 
       for (const furn of this.furniture) {
@@ -660,6 +1179,17 @@
           y: furn.bounds.bottom,
           record: furn
         });
+      }
+
+      for (const scen of this.scenery) {
+        // Draw scenery that is within camera bounds
+        if (scen.x >= minTileX - 3 && scen.x <= maxTileX + 3 && scen.y >= minTileY - 3 && scen.y <= maxTileY + 3) {
+          drawList.push({
+            type: 'scenery',
+            y: (scen.y + 1) * TILE,
+            record: scen
+          });
+        }
       }
 
       drawList.push({
@@ -674,7 +1204,7 @@
         record: this.bot
       });
 
-      // Sort by feet/bottom Y
+      // Sort by feet/bottom Y for correct depth sorting
       drawList.sort((a, b) => a.y - b.y);
 
       // Render sorted entities
@@ -685,6 +1215,8 @@
           if (shapeFn) {
             shapeFn(ctx, f.pad, f.colors);
           }
+        } else if (item.type === 'scenery') {
+          this.drawSceneryItem(ctx, item.record);
         } else if (item.type === 'player') {
           this.renderPlayer(ctx);
         } else if (item.type === 'bot') {
@@ -763,10 +1295,10 @@
       if (currentImg) {
         ctx.save();
         ctx.translate(translateX, translateY);
-        if (rotate !== 0) ctx.rotate(p.facing === 'left' ? -rotate : rotate);
+        if (rotate !== 0) ctx.rotate(p.facing === 'right' ? rotate : -rotate);
         if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
 
-        if (p.facing === 'left') {
+        if (p.facing === 'right') {
           ctx.scale(-1, 1);
         }
         ctx.drawImage(currentImg, -avatarSize / 2, -avatarSize + 12, avatarSize, avatarSize);
@@ -867,9 +1399,9 @@
       if (currentImg) {
         ctx.save();
         ctx.translate(translateX, translateY);
-        if (rotate !== 0) ctx.rotate(b.facing === 'left' ? -rotate : rotate);
+        if (rotate !== 0) ctx.rotate(b.facing === 'right' ? rotate : -rotate);
         if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
-        if (b.facing === 'left') {
+        if (b.facing === 'right') {
           ctx.scale(-1, 1);
         }
         ctx.drawImage(currentImg, -botSize / 2, -botSize + 10, botSize, botSize);

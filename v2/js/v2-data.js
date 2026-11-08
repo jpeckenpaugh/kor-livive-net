@@ -1450,7 +1450,7 @@ window.V2_DATA = {
     "variant": 0
   }
 ],
-  house: { x: 0, y: 0, width: 17, height: 17 },
-  door: { x: 8, y: 16 },
-  spawn: { x: 8, y: 14 }
+  house: { x: 24, y: 22, width: 17, height: 17 },
+  door: { x: 32, y: 38 },
+  spawn: { x: 32, y: 36 }
 };
