@@ -502,50 +502,61 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px dashed #e2e8f0;
+  padding-bottom: 8px;
 }
 
 .scene-location {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #0369a1;
   background: #e0f2fe;
   padding: 4px 12px;
   border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.2px;
 }
 
 .scene-turn-counter {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  display: none;
 }
 
 .scene-context-box {
-  background: #f8fafc;
-  border-left: 4px solid var(--primary);
-  padding: 12px 16px;
-  border-radius: 4px var(--radius-sm) var(--radius-sm) 4px;
-}
-
-.scene-context-box p {
-  font-size: 0.95rem;
-  color: #334155;
-  line-height: 1.5;
+  display: none;
 }
 
 /* DIALOGUE ARENA */
 .dialogue-arena {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  margin-top: 4px;
+  gap: 20px;
+  margin-top: 2px;
 }
 
 .npc-speaker-row {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+}
+
+/* Beat 1 Animation: NPC Avatar & Speech Bubble Entry */
+.npc-speaker-row.beat-entering .speaker-avatar-bubble {
+  animation: npcAvatarPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.npc-speaker-row.beat-entering .speech-bubble {
+  animation: npcBubbleSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+@keyframes npcAvatarPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes npcBubbleSlide {
+  0% { transform: translateY(8px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .speaker-avatar-bubble {
@@ -560,6 +571,7 @@ button {
   font-size: 2.2rem;
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
 }
 
 .speech-bubble-container {
@@ -576,21 +588,52 @@ button {
 }
 
 .speech-bubble {
-  background: #f1f5f9;
-  border-radius: 4px 18px 18px 18px;
+  background: #f8fafc;
+  border-radius: 4px 20px 20px 20px;
   padding: 16px 20px;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border: 1px solid #e2e8f0;
+  gap: 6px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.speech-bubble:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .bubble-kr {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   font-weight: 900;
   color: #0f172a;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+/* Progressive Disclosure Container for Phonetics & English */
+.bubble-disclosure-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+  margin-top: 4px;
+}
+
+.bubble-disclosure-wrap.revealed {
+  display: flex;
+  animation: fadeInDown 0.25s ease-out;
+}
+
+@keyframes fadeInDown {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .bubble-phonetic {
@@ -602,14 +645,21 @@ button {
 .bubble-en {
   font-size: 0.92rem;
   color: #64748b;
-  margin-top: 2px;
+  margin-top: 1px;
+}
+
+/* Action Bar below speech bubble */
+.bubble-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .bubble-audio-btn {
   align-self: flex-start;
   background: white;
   border: 1.5px solid #cbd5e1;
-  padding: 6px 14px;
+  padding: 5px 14px;
   border-radius: var(--radius-full);
   font-size: 0.85rem;
   font-weight: 700;
@@ -618,11 +668,41 @@ button {
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .bubble-audio-btn:hover {
   border-color: var(--primary);
   background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.bubble-translate-toggle-btn {
+  align-self: flex-start;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bubble-translate-toggle-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.bubble-translate-toggle-btn.active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
 }
 
 /* LEARNER CHALLENGE ZONE */
@@ -630,16 +710,27 @@ button {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: #fcfdfe;
+  background: #ffffff;
   border: 1.5px solid #e2e8f0;
   border-radius: var(--radius-md);
   padding: 18px 20px;
+  transition: all 0.3s ease;
+}
+
+/* Beat 2 Animation: Learner Response Choices Fade/Slide In */
+.learner-challenge-zone.beat-options-in {
+  animation: optionsBeatIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes optionsBeatIn {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .learner-challenge-prompt {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #334155;
 }
 
 /* OPTIONS GRID */
@@ -653,20 +744,21 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 12px 18px;
   background: white;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 12px;
 }
 
 .scenario-option-btn:hover:not(:disabled) {
   border-color: #93c5fd;
-  background: #eff6ff;
+  background: #f8fafc;
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
 }
 
 .scenario-option-btn.correct {
@@ -693,51 +785,47 @@ button {
   gap: 2px;
 }
 
+/* Prominent Bold Korean Phrase */
 .option-kr {
   font-family: 'Noto Sans KR', sans-serif;
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
 .option-phonetic {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #2563eb;
+  color: #3b82f6;
+  opacity: 0.9;
 }
 
+/* Subtle Secondary English Hint */
 .option-en-label {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #64748b;
+  text-align: right;
+  flex-shrink: 0;
+  max-width: 45%;
 }
 
-/* ETIQUETTE FEEDBACK CARD */
+/* ETIQUETTE FEEDBACK CARD (Beat 3) */
 .etiquette-feedback-card {
   border-radius: var(--radius-md);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 6px;
-  animation: fadeIn 0.25s ease;
+  margin-top: 8px;
+  animation: etiquetteSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes etiquetteSlideIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
-
-.etiquette-feedback-card.correct {
-  background: #ecfdf5;
-  border: 1.5px solid #a7f3d0;
-}
-
-.etiquette-feedback-card.incorrect {
-  background: #fffbeb;
-  border: 1.5px solid #fde68a;
-}
-
 .etiquette-header {
   display: flex;
   align-items: center;
@@ -817,17 +905,28 @@ button {
   min-width: 170px;
 }
 
-/* SUBTLE SECONDARY STUDY MODE SWITCHER */
+/* DOCKED / STICKY SECONDARY STUDY MODE SWITCHER */
 .mode-tabs {
+  position: sticky;
+  top: 68px;
+  z-index: 30;
   display: flex;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 5px 8px;
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  margin-top: 24px;
-  margin-bottom: 8px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  margin-top: 0;
+  margin-bottom: 16px;
+  max-width: fit-content;
+  align-self: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab-btn {
@@ -1783,8 +1882,16 @@ button {
     width: 100%;
   }
   .mode-tabs {
-    flex-wrap: wrap;
-    justify-content: center;
+    top: 58px;
+    gap: 4px;
+    padding: 4px 6px;
+    max-width: 100%;
+    margin-bottom: 12px;
+  }
+  .tab-btn {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    min-height: 34px;
   }
 }
 

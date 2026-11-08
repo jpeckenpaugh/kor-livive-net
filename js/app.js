@@ -460,6 +460,8 @@
     currentTurnIndex: 0,
     turns: [],
     selectedOption: null,
+    isDisclosureRevealed: false,
+    optionsTimer: null,
 
     // Scenario A State (Pet Customizer)
     petState: {
@@ -499,6 +501,10 @@
     initScenario: function (lesson) {
       this.currentLesson = lesson;
       this.selectedOption = null;
+      if (this.optionsTimer) {
+        clearTimeout(this.optionsTimer);
+        this.optionsTimer = null;
+      }
 
       const stage = document.getElementById('scenario-stage');
       const completionCard = document.getElementById('scenario-completion-card');
@@ -510,17 +516,20 @@
       if (arena) arena.style.display = 'flex';
       if (feedbackCard) feedbackCard.style.display = 'none';
 
-      // Setting location and context
+      // Setting minimal subtle stage indicator
       const locText = document.getElementById('scene-location-text');
-      const ctxText = document.getElementById('scene-context-text');
-
       if (lesson.scene) {
         if (locText) locText.textContent = `${lesson.scene.illustration || '📍'} ${lesson.scene.location || 'Scene'}`;
-        if (ctxText) ctxText.textContent = lesson.scene.context || '';
       } else {
         if (locText) locText.textContent = `${lesson.icon || '📍'} ${lesson.title}`;
-        if (ctxText) ctxText.textContent = lesson.description || '';
       }
+
+      // Hide static context box if it exists in DOM
+      const ctxBox = document.getElementById('scene-context-box');
+      if (ctxBox) ctxBox.style.display = 'none';
+
+      // Bind speech bubble tap-to-reveal toggle
+      this.bindSpeechDisclosure();
 
       // Render NPC Avatar via DiceBear
       if (lesson.characters && lesson.characters.npc) {
@@ -563,6 +572,51 @@
       } else {
         // Fallback scenario for lessons without explicit scenario schema yet
         this.buildFallbackScenario(lesson);
+      }
+    },
+
+    bindSpeechDisclosure: function () {
+      const bubble = document.getElementById('npc-speech-bubble');
+      const toggleBtn = document.getElementById('scenario-translate-btn');
+
+      const toggle = (e) => {
+        if (e) e.stopPropagation();
+        this.setSpeechDisclosure(!this.isDisclosureRevealed);
+      };
+
+      if (toggleBtn && !toggleBtn._bound) {
+        toggleBtn._bound = true;
+        toggleBtn.addEventListener('click', toggle);
+      }
+
+      if (bubble && !bubble._bound) {
+        bubble._bound = true;
+        bubble.addEventListener('click', (e) => {
+          if (e.target.closest('.bubble-action-bar')) return;
+          toggle(e);
+        });
+        bubble.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggle(e);
+          }
+        });
+      }
+    },
+
+    setSpeechDisclosure: function (reveal) {
+      this.isDisclosureRevealed = reveal;
+      const wrap = document.getElementById('bubble-disclosure-wrap');
+      const toggleBtn = document.getElementById('scenario-translate-btn');
+
+      if (wrap) {
+        wrap.classList.toggle('revealed', reveal);
+      }
+      if (toggleBtn) {
+        toggleBtn.classList.toggle('active', reveal);
+        toggleBtn.setAttribute('aria-expanded', reveal ? 'true' : 'false');
+        const label = toggleBtn.querySelector('.translate-btn-label');
+        if (label) label.textContent = reveal ? 'Hide English' : 'Translate';
       }
     },
 
@@ -624,10 +678,12 @@
       const turn = this.turns[index];
       const lesson = this.currentLesson;
 
-      // Update turn counter
-      const counter = document.getElementById('scene-turn-counter');
-      if (counter) {
-        counter.textContent = `Dialogue Turn ${index + 1} of ${this.turns.length}`;
+      // Reset progressive disclosure for the new line
+      this.setSpeechDisclosure(false);
+
+      if (this.optionsTimer) {
+        clearTimeout(this.optionsTimer);
+        this.optionsTimer = null;
       }
 
       // Update NPC speech
@@ -649,7 +705,13 @@
         };
       }
 
-      // Automatically speak the NPC greeting softly with character pitch/rate
+      // Beat 1: Animate NPC character row entry and speak Korean phrase
+      const npcRow = document.getElementById('npc-speaker-row');
+      if (npcRow) {
+        npcRow.classList.remove('beat-entering');
+        void npcRow.offsetWidth;
+        npcRow.classList.add('beat-entering');
+      }
       SpeechAudio.speak(turn.speech.korean, 'ko-KR', null, npcVoice);
 
       // Update prompt
@@ -660,42 +722,50 @@
 
       const grid = document.getElementById('scenario-options-grid');
       const feedbackCard = document.getElementById('etiquette-feedback-card');
+      const challengeZone = document.getElementById('learner-challenge-zone');
+
       if (feedbackCard) feedbackCard.style.display = 'none';
 
       // Check scenario type: Specialized Interactive Mechanics
       const scenarioType = lesson.scenario ? lesson.scenario.type : null;
 
       if (turn.isCustomizerTurn || scenarioType === 'pet_customizer') {
+        if (challengeZone) challengeZone.classList.remove('beat-options-in');
         this.renderPetCustomizer(grid);
         return;
       }
 
       if (turn.isCounterTurn || scenarioType === 'interactive_counter') {
+        if (challengeZone) challengeZone.classList.remove('beat-options-in');
         this.renderInteractiveCounter(grid, lesson.scenario);
         return;
       }
 
       if (scenarioType === 'color_palette') {
+        if (challengeZone) challengeZone.classList.remove('beat-options-in');
         this.renderColorPalette(grid, lesson.scenario);
         return;
       }
 
       if (scenarioType === 'backpack_pack') {
+        if (challengeZone) challengeZone.classList.remove('beat-options-in');
         this.renderBackpackPack(grid, lesson.scenario);
         return;
       }
 
       if (scenarioType === 'emotion_check') {
+        if (challengeZone) challengeZone.classList.remove('beat-options-in');
         this.renderEmotionCheck(grid, lesson.scenario);
         return;
       }
 
       if (scenarioType === 'body_tap') {
+        if (challengeZone) challengeZone.classList.remove('beat-options-in');
         this.renderBodyTap(grid, lesson.scenario);
         return;
       }
 
-      // Standard dialogue options
+      // Beat 2: Standard dialogue options smoothly slide/fade in
       if (grid) {
         grid.innerHTML = '';
         turn.options.forEach(opt => {
@@ -712,6 +782,13 @@
           btn.onclick = () => this.handleOptionSelect(opt, btn, turn);
           grid.appendChild(btn);
         });
+      }
+
+      if (challengeZone) {
+        challengeZone.classList.remove('beat-options-in');
+        this.optionsTimer = setTimeout(() => {
+          challengeZone.classList.add('beat-options-in');
+        }, 320);
       }
     },
 
@@ -800,7 +877,7 @@
 
           <div class="pet-controls-row">
             <div class="pet-selector-group">
-              <span class="pet-selector-title">1. Choose Animal (동물)</span>
+              <span class="pet-selector-title">동물 (Animal)</span>
               <div class="pet-choice-chips" id="pet-animal-chips">
                 ${animals.map(a => `
                   <button type="button" class="pet-chip-btn ${a.id === self.petState.animal ? 'active' : ''}" data-animal="${a.id}">
@@ -811,7 +888,7 @@
             </div>
 
             <div class="pet-selector-group">
-              <span class="pet-selector-title">2. Choose Color (색상)</span>
+              <span class="pet-selector-title">색상 (Color)</span>
               <div class="pet-choice-chips" id="pet-color-chips">
                 ${colors.map(c => `
                   <button type="button" class="pet-chip-btn ${c.id === self.petState.color ? 'active' : ''}" data-color="${c.id}">
@@ -823,7 +900,7 @@
           </div>
 
           <div class="pet-sentence-card">
-            <span class="pet-sentence-title">3. Speak to Teacher Park in Korean</span>
+            <span class="pet-sentence-title">말하기 (Speak in Korean)</span>
             <div class="pet-sentence-kr" id="pet-sentence-kr">${initialData.sentenceKr}</div>
             <div class="pet-sentence-phonetic" id="pet-sentence-phonetic">${initialData.sentencePhonetic}</div>
             <div class="pet-sentence-en" id="pet-sentence-en">${initialData.sentenceEn}</div>
@@ -951,7 +1028,7 @@
           </div>
 
           <div class="counter-tray-section">
-            <span class="counter-tray-title">🛒 Wooden Serving Tray</span>
+            <span class="counter-tray-title">🛒 과일 쟁반 (Fruit Tray)</span>
             <div class="counter-tray-slots" id="counter-tray-slots">
               ${[0, 1, 2].map(i => `
                 <div class="counter-tray-slot" id="counter-slot-${i}">
@@ -964,7 +1041,7 @@
           <div id="counter-feedback-banner" style="display:none;" class="counter-feedback-banner"></div>
 
           <div class="counter-market-shelf">
-            <span class="counter-shelf-title">Tap item to add to tray:</span>
+            <span class="counter-shelf-title">과일 고르기 (Select Fruit)</span>
             <div class="counter-shelf-items">
               ${shelfItems.map(item => `
                 <button type="button" class="counter-item-btn" data-item-id="${item.id}" data-item-kr="${item.kr}" data-item-emoji="${item.emoji}" data-is-target="${item.isTarget}">
@@ -1147,7 +1224,7 @@
           <div id="art-feedback-banner" class="counter-feedback-banner" style="display:none;"></div>
 
           <div class="art-crayons-tray">
-            <span class="art-tray-title">Select matching crayon from your studio desk:</span>
+            <span class="art-tray-title">🎨 크레파스 (Crayons)</span>
             <div class="art-crayons-grid" id="art-crayons-grid">
               ${palette.map(c => `
                 <button type="button" class="art-crayon-btn" data-color-id="${c.id}" data-color-kr="${c.kr}" data-color-hex="${c.hex}" data-color-en="${c.en}">
@@ -1280,7 +1357,7 @@
               <span class="backpack-icon-huge">🎒</span>
               <div>
                 <strong>가방 (School Backpack)</strong>
-                <div style="font-size:0.85rem; color:#0369a1;">Pack 3 essential stationery supplies!</div>
+                <div style="font-size:0.85rem; color:#0369a1;">필요한 학용품 3개를 챙겨요! (Pack 3 items)</div>
               </div>
             </div>
             <div class="backpack-packed-slots" id="backpack-slots-container">
@@ -1291,7 +1368,7 @@
           <div id="backpack-feedback-banner" class="counter-feedback-banner" style="display:none;"></div>
 
           <div class="desk-shelf-container">
-            <span class="desk-shelf-title">Study Desk (책상 위 물건): Tap essential school items to pack:</span>
+            <span class="desk-shelf-title">책상 (Desk Supplies)</span>
             <div class="desk-items-grid" id="desk-items-grid">
               ${deskItems.map(item => `
                 <button type="button" class="desk-item-card" data-item-id="${item.id}" data-item-kr="${item.kr}" data-item-en="${item.en}" data-item-emoji="${item.emoji}" data-essential="${item.isEssential}">

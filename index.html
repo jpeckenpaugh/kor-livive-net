@@ -65,6 +65,22 @@
   <div class="app-layout">
     <main class="workspace">
       
+      <!-- SUBTLE SECONDARY STUDY MODE SWITCHER (DOCKED PILL BAR) -->
+      <nav class="mode-tabs" role="tablist" aria-label="Study modes">
+        <button class="tab-btn active" data-tab="scenario" role="tab" aria-selected="true" id="tab-btn-scenario">
+          <span>💬</span> Scenario
+        </button>
+        <button class="tab-btn" data-tab="cards" role="tab" aria-selected="false">
+          <span>🃏</span> Flashcards
+        </button>
+        <button class="tab-btn" data-tab="quiz" role="tab" aria-selected="false">
+          <span>🎮</span> Quiz
+        </button>
+        <button class="tab-btn" data-tab="all" role="tab" aria-selected="false">
+          <span>📖</span> Word Bank
+        </button>
+      </nav>
+
       <!-- CALM LESSON HERO BAR -->
       <section class="lesson-hero-bar">
         <div class="lesson-hero-info">
@@ -80,32 +96,33 @@
       <section id="scenario-view" class="view-section active" role="tabpanel">
         <div class="scenario-stage" id="scenario-stage">
           
-          <!-- Scene Ambience Header -->
+          <!-- Scene Ambience Header: Minimal Subtle Stage Indicator -->
           <div class="scene-ambience-bar">
             <span class="scene-location" id="scene-location-text">🏫 Classroom Door</span>
-            <span class="scene-turn-counter" id="scene-turn-counter">Dialogue Turn 1 of 2</span>
-          </div>
-
-          <!-- Scenario Setting Context -->
-          <div class="scene-context-box" id="scene-context-box">
-            <p id="scene-context-text">You arrived at the classroom entrance. Your teacher, Teacher Park (박 선생님), looks up warmly and welcomes you.</p>
           </div>
 
           <!-- Active Dialogue Scene Arena -->
           <div class="dialogue-arena" id="dialogue-arena">
             <!-- NPC Speaker Row -->
-            <div class="npc-speaker-row">
+            <div class="npc-speaker-row" id="npc-speaker-row">
               <div class="speaker-avatar-bubble" id="npc-avatar">👩‍🏫</div>
               <div class="speech-bubble-container">
                 <div class="speaker-name" id="npc-name">Teacher Park (박 선생님)</div>
-                <div class="speech-bubble" id="npc-speech-bubble">
+                <div class="speech-bubble" id="npc-speech-bubble" role="button" tabindex="0" title="Tap bubble to reveal or hide English translation & phonetics">
                   <div class="bubble-kr" id="npc-speech-kr">좋은 아침이에요! 안녕하세요!</div>
-                  <div class="bubble-phonetic" id="npc-speech-phonetic">Jo-eun a-chim-i-e-yo! An-nyeong-ha-se-yo!</div>
-                  <div class="bubble-en" id="npc-speech-en">Good morning! Hello!</div>
+                  <div class="bubble-disclosure-wrap" id="bubble-disclosure-wrap">
+                    <div class="bubble-phonetic" id="npc-speech-phonetic">Jo-eun a-chim-i-e-yo! An-nyeong-ha-se-yo!</div>
+                    <div class="bubble-en" id="npc-speech-en">Good morning! Hello!</div>
+                  </div>
                 </div>
-                <button class="bubble-audio-btn" id="scenario-audio-btn" aria-label="Listen to teacher's Korean phrase" title="Listen">
-                  <span>🔊</span> Listen
-                </button>
+                <div class="bubble-action-bar">
+                  <button class="bubble-audio-btn" id="scenario-audio-btn" aria-label="Listen to teacher's Korean phrase" title="Listen">
+                    <span>🔊</span> Listen
+                  </button>
+                  <button class="bubble-translate-toggle-btn" id="scenario-translate-btn" type="button" aria-expanded="false" title="Show/hide English translation">
+                    <span class="translate-icon">👁️</span> <span class="translate-btn-label">Translate</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -278,22 +295,6 @@
           <!-- Dynamically populated 6 cards for active lesson -->
         </div>
       </section>
-
-      <!-- SUBTLE SECONDARY STUDY MODE SWITCHER (QUIET BOTTOM/SECONDARY BAR) -->
-      <nav class="mode-tabs" role="tablist" aria-label="Study modes">
-        <button class="tab-btn active" data-tab="scenario" role="tab" aria-selected="true" id="tab-btn-scenario">
-          <span>💬</span> Scenario
-        </button>
-        <button class="tab-btn" data-tab="cards" role="tab" aria-selected="false">
-          <span>🃏</span> Flashcards
-        </button>
-        <button class="tab-btn" data-tab="quiz" role="tab" aria-selected="false">
-          <span>🎮</span> Quiz
-        </button>
-        <button class="tab-btn" data-tab="all" role="tab" aria-selected="false">
-          <span>📖</span> Word Bank
-        </button>
-      </nav>
 
     </main>
   </div>
