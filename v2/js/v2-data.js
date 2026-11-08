@@ -1,0 +1,1456 @@
+/**
+ * v2-data.js - Home layout and item definitions
+ */
+window.V2_DATA = {
+  items: {
+  "couch": {
+    "id": "couch",
+    "label": "couch",
+    "zone": "living",
+    "icon": "🛋️",
+    "size": {
+      "w": 2,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "couch",
+    "colors": {
+      "base": "#6f7f5c",
+      "accent": "#93a67b",
+      "trim": "#4a5840"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8a6a4f",
+          "accent": "#b08d63"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5e7280",
+          "accent": "#8fa7b8"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "sit",
+      "line": "you sink into the couch."
+    },
+    "use": {
+      "verb": "Sit",
+      "kind": "sit",
+      "line": "you sink into the couch."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "armchair": {
+    "id": "armchair",
+    "label": "armchair",
+    "zone": "living",
+    "icon": "🪑",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "armchair",
+    "colors": {
+      "base": "#7d6a55",
+      "accent": "#a89177",
+      "trim": "#57483a"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8f6448",
+          "accent": "#c08f68"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#66707a",
+          "accent": "#93a2ae"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "sit",
+      "line": "the armchair hugs you back."
+    },
+    "use": {
+      "verb": "Sit",
+      "kind": "sit",
+      "line": "the armchair hugs you back."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "coffee-table": {
+    "id": "coffee-table",
+    "label": "coffee table",
+    "zone": "living",
+    "icon": "☕",
+    "size": {
+      "w": 2,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "coffee-table",
+    "colors": {
+      "base": "#8a6a4a",
+      "accent": "#b08d63",
+      "trim": "#5c472f"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#9a6f45",
+          "accent": "#c79a6a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#6f6357",
+          "accent": "#9d8f7d"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the coffee table is clear."
+    },
+    "use": {
+      "verb": "Look",
+      "kind": "look",
+      "line": "the coffee table is clear."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "tv": {
+    "id": "tv",
+    "label": "tv",
+    "zone": "living",
+    "icon": "📺",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "tv",
+    "colors": {
+      "base": "#2f3833",
+      "accent": "#7fa8b8",
+      "trim": "#1c221e"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#3a332b",
+          "accent": "#bfa57a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#2b3540",
+          "accent": "#8fb7c9"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "toggle",
+      "line": "the tv is off.",
+      "onLine": "the tv crackles to life.",
+      "offLine": "the tv goes quiet."
+    },
+    "use": {
+      "verb": "Watch",
+      "kind": "toggle",
+      "onLine": "the tv crackles to life.",
+      "offLine": "the tv goes quiet."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "radio": {
+    "id": "radio",
+    "label": "radio",
+    "zone": "living",
+    "icon": "📻",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "radio",
+    "colors": {
+      "base": "#6a5540",
+      "accent": "#c8a86a",
+      "trim": "#45382a"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#7a5138",
+          "accent": "#d8a465"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#4f5c62",
+          "accent": "#9db6bd"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "toggle",
+      "line": "the radio is quiet.",
+      "onLine": "the radio plays a little jingle.",
+      "offLine": "the radio clicks off."
+    },
+    "use": {
+      "verb": "Play a tune",
+      "kind": "toggle",
+      "cue": "radio-tune",
+      "onLine": "the radio plays a little jingle.",
+      "offLine": "the radio clicks off."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "floor-lamp": {
+    "id": "floor-lamp",
+    "label": "floor lamp",
+    "zone": "living",
+    "icon": "💡",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "floor-lamp",
+    "colors": {
+      "base": "#5c5141",
+      "accent": "#f0d48a",
+      "trim": "#3c352b"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#6b543c",
+          "accent": "#ffcf7a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#4a525a",
+          "accent": "#cfe3ef"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "toggle",
+      "line": "the lamp is off.",
+      "onLine": "a warm glow fills the room.",
+      "offLine": "the room dims again."
+    },
+    "use": {
+      "verb": "Light",
+      "kind": "toggle",
+      "onLine": "a warm glow fills the room.",
+      "offLine": "the room dims again."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "bookshelf": {
+    "id": "bookshelf",
+    "label": "bookshelf",
+    "zone": "living",
+    "icon": "📚",
+    "size": {
+      "w": 1,
+      "h": 2
+    },
+    "solid": true,
+    "shape": "bookshelf",
+    "colors": {
+      "base": "#7a5b3d",
+      "accent": "#c9b08c",
+      "trim": "#4e3a27"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8c5c38",
+          "accent": "#d6b088"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5d5a4f",
+          "accent": "#aeb6a8"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the shelves are full of borrowed books."
+    },
+    "use": {
+      "verb": "Read",
+      "kind": "look",
+      "line": "the shelves are full of borrowed books."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "rug": {
+    "id": "rug",
+    "label": "round rug",
+    "zone": "living",
+    "icon": "🟠",
+    "size": {
+      "w": 2,
+      "h": 2
+    },
+    "solid": false,
+    "ground": true,
+    "backpack": true,
+    "shape": "rug",
+    "colors": {
+      "base": "#b9744f",
+      "accent": "#e8c7a0",
+      "trim": "#8f5539"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#c07a45",
+          "accent": "#f0d29a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#7f7f9a",
+          "accent": "#c9c9e4"
+        }
+      }
+    ],
+    "interact": null,
+    "use": {
+      "verb": "Look",
+      "kind": "look",
+      "line": "the rug is soft underfoot."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "plant": {
+    "id": "plant",
+    "label": "potted plant",
+    "zone": "living",
+    "icon": "🪴",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "backpack": true,
+    "shape": "plant",
+    "colors": {
+      "base": "#5fae5f",
+      "accent": "#b9744f",
+      "trim": "#3f7a3f"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#7cb56a",
+          "accent": "#c07a52"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5f9f8f",
+          "accent": "#6f8fa8"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the plant looks happy here."
+    },
+    "use": {
+      "verb": "Water",
+      "kind": "look",
+      "line": "the plant looks happy here."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "fridge": {
+    "id": "fridge",
+    "label": "fridge",
+    "zone": "kitchen",
+    "icon": "🧊",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "fridge",
+    "colors": {
+      "base": "#d7e0d8",
+      "accent": "#9fb2a4",
+      "trim": "#6d7d70"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#e6ddc8",
+          "accent": "#c2ae8a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#cfdae4",
+          "accent": "#93a9bd"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the fridge hums."
+    },
+    "use": {
+      "verb": "Open",
+      "kind": "look",
+      "line": "the fridge hums."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "stove": {
+    "id": "stove",
+    "label": "stove",
+    "zone": "kitchen",
+    "icon": "🔥",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "stove",
+    "colors": {
+      "base": "#4a5150",
+      "accent": "#c9c4b6",
+      "trim": "#2f3534"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#5a4a42",
+          "accent": "#d8bfa0"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#3f4a55",
+          "accent": "#b4c4d0"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the stove is cold."
+    },
+    "use": {
+      "verb": "Bake a pie",
+      "kind": "recipe",
+      "recipe": {
+        "inputs": {
+          "apple": 3
+        },
+        "output": "apple-pie"
+      }
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "counter": {
+    "id": "counter",
+    "label": "counter",
+    "zone": "kitchen",
+    "icon": "🍽️",
+    "size": {
+      "w": 2,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "counter",
+    "colors": {
+      "base": "#a98f6c",
+      "accent": "#d8c6a5",
+      "trim": "#6f5a3f"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#b3895c",
+          "accent": "#e6cda2"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#8f948f",
+          "accent": "#c9cfc7"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the counter is tidy."
+    },
+    "use": {
+      "verb": "Look",
+      "kind": "look",
+      "line": "the counter is tidy."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "dining-table": {
+    "id": "dining-table",
+    "label": "dining table",
+    "zone": "dining",
+    "icon": "🍽️",
+    "size": {
+      "w": 2,
+      "h": 2
+    },
+    "solid": true,
+    "shape": "dining-table",
+    "colors": {
+      "base": "#8a6a4a",
+      "accent": "#b08d63",
+      "trim": "#5c472f"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#9c6f44",
+          "accent": "#c89a68"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#6d6256",
+          "accent": "#9c9080"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the table is set for two."
+    },
+    "use": {
+      "verb": "Look",
+      "kind": "look",
+      "line": "the table is set for two."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "chair": {
+    "id": "chair",
+    "label": "chair",
+    "zone": "dining",
+    "icon": "🪑",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "chair",
+    "colors": {
+      "base": "#7d6a55",
+      "accent": "#a89177",
+      "trim": "#57483a"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8d6244",
+          "accent": "#bb8d64"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5f6a72",
+          "accent": "#8f9da8"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "sit",
+      "line": "you perch on the chair."
+    },
+    "use": {
+      "verb": "Sit",
+      "kind": "sit",
+      "line": "you perch on the chair."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "bed": {
+    "id": "bed",
+    "label": "bed",
+    "zone": "bedroom",
+    "icon": "🛏️",
+    "size": {
+      "w": 2,
+      "h": 3
+    },
+    "solid": true,
+    "shape": "bed",
+    "colors": {
+      "base": "#6d7f8a",
+      "accent": "#e8e2d4",
+      "trim": "#4a5a63"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8a6f5c",
+          "accent": "#efe3cd"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5d7285",
+          "accent": "#e2e7ec"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "sleep",
+      "line": "you flop onto the bed."
+    },
+    "use": {
+      "verb": "Sleep",
+      "kind": "sleep",
+      "line": "you flop onto the bed."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "nightstand": {
+    "id": "nightstand",
+    "label": "nightstand",
+    "zone": "bedroom",
+    "icon": "🗄️",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "nightstand",
+    "colors": {
+      "base": "#7a5b3d",
+      "accent": "#a98f6c",
+      "trim": "#4e3a27"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8c5c38",
+          "accent": "#c1976a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5c5a51",
+          "accent": "#9ea598"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the nightstand holds a spare key."
+    },
+    "use": {
+      "verb": "Look",
+      "kind": "look",
+      "line": "the nightstand holds a spare key."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "dresser": {
+    "id": "dresser",
+    "label": "dresser",
+    "zone": "bedroom",
+    "icon": "🗄️",
+    "size": {
+      "w": 2,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "dresser",
+    "colors": {
+      "base": "#7a5b3d",
+      "accent": "#b08d63",
+      "trim": "#4e3a27"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#8c5c38",
+          "accent": "#c1976a"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#5c5a51",
+          "accent": "#9ea598"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the dresser drawers are shut."
+    },
+    "use": {
+      "verb": "Look",
+      "kind": "look",
+      "line": "the dresser drawers are shut."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "comfy",
+        "price": 10,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "deluxe",
+        "price": 25,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "piano": {
+    "id": "piano",
+    "label": "upright piano",
+    "zone": "living",
+    "icon": "🎹",
+    "size": {
+      "w": 2,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "piano",
+    "price": 15,
+    "colors": {
+      "base": "#4a3a33",
+      "accent": "#e9e3d4",
+      "trim": "#2b211d"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#5c3f2e",
+          "accent": "#f2e6cc"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#323c42",
+          "accent": "#dfe9ec"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the keys are cool under your fingers."
+    },
+    "use": {
+      "verb": "Play",
+      "kind": "look",
+      "line": "you pick out a small tune."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "tuned",
+        "price": 12,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "concert",
+        "price": 30,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "aquarium": {
+    "id": "aquarium",
+    "label": "aquarium",
+    "zone": "living",
+    "icon": "🐠",
+    "size": {
+      "w": 2,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "aquarium",
+    "price": 30,
+    "colors": {
+      "base": "#33524f",
+      "accent": "#9fd7d0",
+      "trim": "#1f3331"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#4d4a3a",
+          "accent": "#e6cf95"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#2f4654",
+          "accent": "#b3dcea"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the fish drift in slow circles."
+    },
+    "use": {
+      "verb": "Watch",
+      "kind": "look",
+      "line": "a little bubble wobbles to the top."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "planted",
+        "price": 15,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "reef",
+        "price": 35,
+        "accent": "#cfe9f4"
+      }
+    ]
+  },
+  "wall-clock": {
+    "id": "wall-clock",
+    "label": "wall clock",
+    "zone": "living",
+    "icon": "🕰️",
+    "size": {
+      "w": 1,
+      "h": 1
+    },
+    "solid": true,
+    "shape": "wall-clock",
+    "price": 20,
+    "colors": {
+      "base": "#6b4a34",
+      "accent": "#f0e6cf",
+      "trim": "#3d2a1e"
+    },
+    "variants": [
+      {
+        "id": "plain",
+        "label": "plain"
+      },
+      {
+        "id": "warm",
+        "label": "warm",
+        "colors": {
+          "base": "#7d5233",
+          "accent": "#f6e3b4"
+        }
+      },
+      {
+        "id": "cool",
+        "label": "cool",
+        "colors": {
+          "base": "#4a5158",
+          "accent": "#dfe8ee"
+        }
+      }
+    ],
+    "interact": {
+      "kind": "look",
+      "line": "the clock ticks steadily."
+    },
+    "use": {
+      "verb": "Check",
+      "kind": "look",
+      "line": "it is always about tea time."
+    },
+    "tiers": [
+      {
+        "name": "plain",
+        "price": 0,
+        "accent": "#b7c6a2"
+      },
+      {
+        "name": "oiled",
+        "price": 8,
+        "accent": "#e2c48a"
+      },
+      {
+        "name": "heirloom",
+        "price": 22,
+        "accent": "#cfe9f4"
+      }
+    ]
+  }
+},
+  layout: [
+  {
+    "itemId": "bookshelf",
+    "dx": 1,
+    "dy": 1,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "floor-lamp",
+    "dx": 2,
+    "dy": 1,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "radio",
+    "dx": 3,
+    "dy": 1,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "plant",
+    "dx": 4,
+    "dy": 1,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "tv",
+    "dx": 1,
+    "dy": 4,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "armchair",
+    "dx": 4,
+    "dy": 4,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "rug",
+    "dx": 2,
+    "dy": 5,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "couch",
+    "dx": 1,
+    "dy": 7,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "coffee-table",
+    "dx": 3,
+    "dy": 7,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "stove",
+    "dx": 7,
+    "dy": 1,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "fridge",
+    "dx": 9,
+    "dy": 1,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "counter",
+    "dx": 6,
+    "dy": 2,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "chair",
+    "dx": 11,
+    "dy": 4,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "dining-table",
+    "dx": 11,
+    "dy": 5,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "chair",
+    "dx": 13,
+    "dy": 5,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "dresser",
+    "dx": 13,
+    "dy": 8,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "bed",
+    "dx": 13,
+    "dy": 9,
+    "rot": 0,
+    "variant": 0
+  },
+  {
+    "itemId": "nightstand",
+    "dx": 15,
+    "dy": 10,
+    "rot": 0,
+    "variant": 0
+  }
+],
+  house: { x: 0, y: 0, width: 17, height: 17 },
+  door: { x: 8, y: 16 },
+  spawn: { x: 8, y: 14 }
+};

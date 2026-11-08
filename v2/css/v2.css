@@ -1,0 +1,430 @@
+/* ==========================================================================
+   v2.css - Styling for the standalone V2 Home Demo
+   ========================================================================== */
+
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --bg-dark: #0f172a;
+  --panel-bg: rgba(30, 41, 59, 0.92);
+  --border-color: rgba(255, 255, 255, 0.12);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-gold: #f59e0b;
+  --accent-bot: #10b981;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-main);
+}
+
+#app-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Canvas & World
+   ========================================================================== */
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Selection / Character Creation Screen
+   ========================================================================== */
+.overlay-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 20px;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.overlay-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.card-modal {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  padding: 24px 28px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.modal-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+
+.modal-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.customizer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.custom-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.custom-panel h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar-preview-box {
+  width: 110px;
+  height: 110px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-preview-box svg {
+  width: 90%;
+  height: 90%;
+}
+
+.input-group {
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: var(--primary);
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.modal-footer {
+  padding: 16px 28px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-primary {
+  width: 100%;
+  max-width: 320px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+  transition: all 0.2s ease;
+  letter-spacing: -0.01em;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.5);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   HUD Interface
+   ========================================================================== */
+.hud-corner {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hud-profile-pill {
+  display: flex;
+  align-items: center;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px 6px 6px;
+  border-radius: 40px;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hud-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--primary);
+}
+
+.hud-avatar.bot {
+  border-color: var(--accent-bot);
+}
+
+.hud-avatar svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hud-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.hud-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.hud-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.hud-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.hud-btn {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s;
+}
+
+.hud-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Help Pill / Controls Legend
+   ========================================================================== */
+.controls-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 20;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+.key-badge {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Mobile Virtual D-Pad
+   ========================================================================== */
+.virtual-dpad {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 136px;
+  height: 136px;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.dpad-btn {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+
+.dpad-btn:active, .dpad-btn.active {
+  background: rgba(79, 70, 229, 0.8);
+}
+
+#dpad-up    { grid-column: 2; grid-row: 1; }
+#dpad-left  { grid-column: 1; grid-row: 2; }
+#dpad-down  { grid-column: 2; grid-row: 3; }
+#dpad-right { grid-column: 3; grid-row: 2; }
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .customizer-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .controls-legend {
+    display: none; /* Hide keyboard legend on small phones */
+  }
+  .card-modal {
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KOR Livive - My Home v2</title>
+  <link rel="stylesheet" href="css/v2.css">
+  <!-- DiceBear procedural voxel engine -->
+  <script src="../vendor/dicebear-voxel.js"></script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- Main 2D Canvas Viewport -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- In-Game HUD: Player & Companion Info -->
+    <div class="hud-corner">
+      <!-- Player Pill -->
+      <div class="hud-profile-pill">
+        <div class="hud-avatar" id="hud-player-avatar"></div>
+        <div class="hud-meta">
+          <span class="hud-label">Player</span>
+          <span class="hud-title" id="hud-player-name">Learner Kim</span>
+        </div>
+      </div>
+
+      <!-- Bot Pill -->
+      <div class="hud-profile-pill">
+        <div class="hud-avatar bot" id="hud-bot-avatar"></div>
+        <div class="hud-meta">
+          <span class="hud-label">VoxelBot Companion</span>
+          <span class="hud-title" id="hud-bot-name">SparkyBot</span>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <button id="btn-customize" class="hud-btn">⚙️ Customize</button>
+      </div>
+    </div>
+
+    <!-- Controls Legend (Desktop) -->
+    <div class="controls-legend">
+      <span>Move: <span class="key-badge">WASD</span> or <span class="key-badge">Arrows</span></span>
+      <span>•</span>
+      <span>VoxelBot smoothly follows your steps</span>
+    </div>
+
+    <!-- Virtual On-screen D-Pad (Touch / Mobile) -->
+    <div class="virtual-dpad" id="virtual-dpad">
+      <button class="dpad-btn" id="dpad-up" aria-label="Up">▲</button>
+      <button class="dpad-btn" id="dpad-left" aria-label="Left">◀</button>
+      <button class="dpad-btn" id="dpad-down" aria-label="Down">▼</button>
+      <button class="dpad-btn" id="dpad-right" aria-label="Right">▶</button>
+    </div>
+
+    <!-- Character & Companion Selection / Customizer Modal -->
+    <div id="screen-selection" class="overlay-screen">
+      <div class="card-modal">
+        <div class="modal-header">
+          <h1>Welcome to Your Home</h1>
+          <p>Create your voxel character &amp; customize your companion bot</p>
+        </div>
+
+        <div class="modal-body">
+          <div class="customizer-grid">
+            <!-- Player Customizer -->
+            <div class="custom-panel">
+              <h2>🧑 Your Character</h2>
+              <div class="avatar-preview-box" id="preview-player-avatar"></div>
+              <div class="input-group">
+                <label for="input-player-name">Player Name</label>
+                <input type="text" id="input-player-name" maxlength="20" placeholder="e.g. Minjun Kim">
+              </div>
+              <button class="btn-secondary" id="btn-random-player">🎲 Randomize Look</button>
+            </div>
+
+            <!-- VoxelBot Customizer -->
+            <div class="custom-panel">
+              <h2>🤖 VoxelBot Companion</h2>
+              <div class="avatar-preview-box" id="preview-bot-avatar"></div>
+              <div class="input-group">
+                <label for="input-bot-name">Companion Name</label>
+                <input type="text" id="input-bot-name" maxlength="20" placeholder="e.g. SparkyBot">
+              </div>
+              <button class="btn-secondary" id="btn-random-bot">🎲 Randomize Bot</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-enter-home" class="btn-primary">Enter My Home 🏠</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Scripts -->
+  <script src="js/v2-data.js"></script>
+  <script src="js/v2-engine.js"></script>
+  <script src="js/v2-app.js"></script>
+</body>
+</html>
