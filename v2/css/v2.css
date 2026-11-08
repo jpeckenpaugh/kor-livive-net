@@ -82,7 +82,8 @@ html, body {
   border: 1px solid var(--border-color);
   border-radius: 20px;
   width: 100%;
-  max-width: 680px;
+  max-width: 740px;
+  max-height: 92vh;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
@@ -115,10 +116,12 @@ html, body {
 }
 
 .modal-body {
-  padding: 24px 28px;
+  padding: 20px 28px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  overflow-y: auto;
+  max-height: calc(92vh - 170px);
 }
 
 .customizer-grid {
@@ -195,6 +198,45 @@ html, body {
 
 .input-group input:focus {
   border-color: var(--primary);
+}
+
+.selector-row {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.input-group.half {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.input-group.full {
+  flex: 1 1 100%;
+  margin-bottom: 0;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.custom-select:focus {
+  border-color: var(--primary);
+}
+
+.custom-select option {
+  background: #1e293b;
+  color: #fff;
 }
 
 .btn-secondary {

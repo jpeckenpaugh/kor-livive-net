@@ -33,6 +33,7 @@
         try {
           return window.DiceBearVoxel.createVoxelAvatar({
             seed: String(seed),
+            backgroundColor: [],
             ...options
           });
         } catch (err) {
@@ -54,6 +55,7 @@
         try {
           return window.DiceBearVoxel.createCompanionAvatar(style, {
             seed: String(seed),
+            backgroundColor: [],
             ...options
           });
         } catch (err) {
