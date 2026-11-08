@@ -79,6 +79,10 @@
       customer_horse: { pitch: 0.85, rate: 0.85 }, // Horse / Shopkeeper: grounded, calm, slightly deeper
       horse: { pitch: 0.85, rate: 0.85 },
       shopkeeper: { pitch: 0.85, rate: 0.85 },
+      halmeoni: { pitch: 0.9, rate: 0.85 },      // Bunsik Halmeoni: warm elder tone
+      minjun: { pitch: 1.25, rate: 0.90 },       // Classmate Min-jun: youthful, lively peer
+      nurse: { pitch: 1.1, rate: 0.85 },         // School Health Nurse
+      mom: { pitch: 1.15, rate: 0.85 },          // Caring Mother
       child: { pitch: 1.3, rate: 0.90 },         // Child / young learner: bright, cheerful
       learner: { pitch: 1.2, rate: 0.90 },
       default: { pitch: 1.0, rate: 0.85 }
@@ -470,6 +474,28 @@
       targetCount: 3
     },
 
+    // Lesson 4 Color State
+    colorState: {
+      stepIndex: 0,
+      selectedColor: null
+    },
+
+    // Lesson 7 Backpack State
+    backpackState: {
+      packedItems: []
+    },
+
+    // Lesson 8 Emotion State
+    emotionState: {
+      selectedEmotion: null
+    },
+
+    // Lesson 9 Body State
+    bodyState: {
+      stepIndex: 0,
+      tappedParts: []
+    },
+
     initScenario: function (lesson) {
       this.currentLesson = lesson;
       this.selectedOption = null;
@@ -512,6 +538,14 @@
               npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar(npc.avatarSeed);
             } else if (npc.id === 'teacher_park') {
               npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar('TeacherPark');
+            } else if (npc.id === 'classmate_minjun') {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar('MinjunVoxel');
+            } else if (npc.id === 'shopkeeper_halmeoni') {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar('Halmeoni');
+            } else if (npc.id === 'nurse_song') {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar('NurseSong');
+            } else if (npc.id === 'mom_avatar') {
+              npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar('KoreanMom');
             } else {
               npcAvatar.innerHTML = AvatarEngine.renderCharacterAvatar(npc.id || 'NPC');
             }
@@ -628,14 +662,36 @@
       const feedbackCard = document.getElementById('etiquette-feedback-card');
       if (feedbackCard) feedbackCard.style.display = 'none';
 
-      // Check scenario type: Advanced Scenario A (Pet Customizer) or Scenario B (Visual Counter)
-      if (turn.isCustomizerTurn || (lesson.scenario && lesson.scenario.type === 'pet_customizer')) {
+      // Check scenario type: Specialized Interactive Mechanics
+      const scenarioType = lesson.scenario ? lesson.scenario.type : null;
+
+      if (turn.isCustomizerTurn || scenarioType === 'pet_customizer') {
         this.renderPetCustomizer(grid);
         return;
       }
 
-      if (turn.isCounterTurn || (lesson.scenario && lesson.scenario.type === 'interactive_counter')) {
+      if (turn.isCounterTurn || scenarioType === 'interactive_counter') {
         this.renderInteractiveCounter(grid, lesson.scenario);
+        return;
+      }
+
+      if (scenarioType === 'color_palette') {
+        this.renderColorPalette(grid, lesson.scenario);
+        return;
+      }
+
+      if (scenarioType === 'backpack_pack') {
+        this.renderBackpackPack(grid, lesson.scenario);
+        return;
+      }
+
+      if (scenarioType === 'emotion_check') {
+        this.renderEmotionCheck(grid, lesson.scenario);
+        return;
+      }
+
+      if (scenarioType === 'body_tap') {
+        this.renderBodyTap(grid, lesson.scenario);
         return;
       }
 
@@ -1051,6 +1107,517 @@
       }
     },
 
+    
+    /* ==========================================================================
+       SCENARIO: COLOR PALETTE (LESSON 4 - ART STUDIO PAINTING)
+       ========================================================================== */
+    renderColorPalette: function (container, scenarioData) {
+      if (!container) return;
+      const self = this;
+      this.colorState.stepIndex = 0;
+      this.colorState.selectedColor = null;
+
+      const targetColors = (scenarioData && scenarioData.targetColors) || [
+        { id: 'red', kr: '빨간색', en: 'Red', hex: '#ef4444', phonetic: 'Ppal-gan-saek' },
+        { id: 'blue', kr: '파란색', en: 'Blue', hex: '#3b82f6', phonetic: 'Pa-ran-saek' },
+        { id: 'yellow', kr: '노란색', en: 'Yellow', hex: '#eab308', phonetic: 'No-ran-saek' }
+      ];
+
+      const palette = (scenarioData && scenarioData.palette) || [
+        { id: 'red', kr: '빨간색', en: 'Red', hex: '#ef4444', phonetic: 'Ppal-gan-saek' },
+        { id: 'blue', kr: '파란색', en: 'Blue', hex: '#3b82f6', phonetic: 'Pa-ran-saek' },
+        { id: 'yellow', kr: '노란색', en: 'Yellow', hex: '#eab308', phonetic: 'No-ran-saek' },
+        { id: 'green', kr: '초록색', en: 'Green', hex: '#22c55e', phonetic: 'Cho-rok-saek' },
+        { id: 'white', kr: '하얀색', en: 'White', hex: '#f8fafc', phonetic: 'Ha-yan-saek' },
+        { id: 'black', kr: '검은색', en: 'Black', hex: '#1e293b', phonetic: 'Geom-eun-saek' }
+      ];
+
+      container.innerHTML = `
+        <div class="art-studio-container">
+          <div class="art-easel-stage">
+            <div class="art-canvas-frame" id="art-canvas-frame">
+              <div class="canvas-splash-effect" id="art-canvas-splash">🎨</div>
+              <div class="canvas-color-label" id="art-canvas-label">Clean Canvas (도화지)</div>
+            </div>
+            <div class="art-mission-badge" id="art-mission-badge">
+              <span>🎯 Request:</span> <strong id="art-target-req">${targetColors[0].kr} 크레파스 주세요!</strong>
+            </div>
+          </div>
+
+          <div id="art-feedback-banner" class="counter-feedback-banner" style="display:none;"></div>
+
+          <div class="art-crayons-tray">
+            <span class="art-tray-title">Select matching crayon from your studio desk:</span>
+            <div class="art-crayons-grid" id="art-crayons-grid">
+              ${palette.map(c => `
+                <button type="button" class="art-crayon-btn" data-color-id="${c.id}" data-color-kr="${c.kr}" data-color-hex="${c.hex}" data-color-en="${c.en}">
+                  <span class="crayon-swatch" style="background-color: ${c.hex};"></span>
+                  <div class="crayon-names">
+                    <span class="crayon-kr">${c.kr}</span>
+                    <span class="crayon-phonetic">${c.phonetic}</span>
+                    <span class="crayon-en">${c.en}</span>
+                  </div>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      function showArtBanner(msg, isWarn = false) {
+        const banner = document.getElementById('art-feedback-banner');
+        if (!banner) return;
+        banner.className = isWarn ? 'counter-feedback-banner gentle-warn' : 'counter-feedback-banner success';
+        banner.textContent = msg;
+        banner.style.display = 'flex';
+      }
+
+      function updateTargetUI() {
+        const targetReq = document.getElementById('art-target-req');
+        const curTarget = targetColors[self.colorState.stepIndex];
+        if (targetReq && curTarget) {
+          targetReq.textContent = `${curTarget.kr} (${curTarget.en}) 크레파스 주세요!`;
+          SpeechAudio.speak(`${curTarget.kr} 크레파스 주세요`, 'ko-KR', null, 'teacher');
+        }
+      }
+
+      const crayonBtns = container.querySelectorAll('.art-crayon-btn');
+      crayonBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const colorId = btn.getAttribute('data-color-id');
+          const colorKr = btn.getAttribute('data-color-kr');
+          const colorHex = btn.getAttribute('data-color-hex');
+          const colorEn = btn.getAttribute('data-color-en');
+          const curTarget = targetColors[self.colorState.stepIndex];
+
+          if (colorId !== curTarget.id) {
+            btn.classList.add('wrong-shake');
+            setTimeout(() => btn.classList.remove('wrong-shake'), 500);
+            SpeechAudio.speak(`${curTarget.kr} 주세요`, 'ko-KR', null, 'teacher');
+            showArtBanner(`Art Teacher asked for ${curTarget.kr} (${curTarget.en}), but you chose ${colorKr}! Try again! 🖌️`, true);
+            return;
+          }
+
+          // Correct crayon picked!
+          const canvas = document.getElementById('art-canvas-frame');
+          const splash = document.getElementById('art-canvas-splash');
+          const label = document.getElementById('art-canvas-label');
+
+          SpeechAudio.speak(`${colorKr}!`, 'ko-KR', null, 'learner');
+
+          if (canvas) {
+            canvas.style.backgroundColor = colorHex;
+            canvas.classList.remove('paint-splashed');
+            void canvas.offsetWidth;
+            canvas.classList.add('paint-splashed');
+          }
+          if (splash) splash.textContent = '✨🎨🖌️';
+          if (label) {
+            label.textContent = `${colorKr} (${colorEn}) Painted!`;
+            label.style.color = (colorId === 'white') ? '#0f172a' : (colorId === 'black') ? '#ffffff' : '#0f172a';
+          }
+
+          showArtBanner(`Brilliant! Painted canvas with ${colorKr} (${colorEn})! 🌟`, false);
+
+          self.colorState.stepIndex++;
+
+          if (self.colorState.stepIndex < targetColors.length) {
+            setTimeout(() => {
+              updateTargetUI();
+            }, 1200);
+          } else {
+            // Completed all colors!
+            setTimeout(() => {
+              SpeechAudio.speak('정말 예쁜 그림이에요! 감사합니다!', 'ko-KR', () => {
+                const feedbackCard = document.getElementById('etiquette-feedback-card');
+                const feedbackTitle = document.getElementById('etiquette-title');
+                const feedbackExp = document.getElementById('etiquette-explanation');
+                const feedbackNuance = document.getElementById('etiquette-nuance');
+                const continueBtn = document.getElementById('etiquette-continue-btn');
+
+                if (feedbackCard) {
+                  feedbackCard.className = 'etiquette-feedback-card correct';
+                  feedbackTitle.textContent = '아름다운 그림이 완성되었어요! 🎨✨';
+                  feedbackExp.textContent = 'You identified Korean color words (빨간색, 파란색, 노란색) and painted a colorful masterpiece canvas with Teacher Park!';
+                  feedbackNuance.textContent = '💡 Etiquette tip: Adding "~색" (saek) denotes the color itself. Use "~색 크레파스 주세요" when asking for art supplies.';
+                  feedbackCard.style.display = 'flex';
+
+                  continueBtn.style.display = 'inline-flex';
+                  continueBtn.textContent = 'Finish Lesson & Collect Star ⭐';
+                  continueBtn.onclick = () => {
+                    self.finishScenario();
+                  };
+                }
+              }, 'teacher');
+            }, 1000);
+          }
+        });
+      });
+    },
+
+    /* ==========================================================================
+       SCENARIO: BACKPACK SUPPLY CHECK (LESSON 7 - SCHOOL DESK)
+       ========================================================================== */
+    renderBackpackPack: function (container, scenarioData) {
+      if (!container) return;
+      const self = this;
+      this.backpackState.packedItems = [];
+
+      const deskItems = (scenarioData && scenarioData.deskItems) || [
+        { id: 'book', kr: '책', en: 'Book', emoji: '📖', phonetic: 'Chaek', isEssential: true },
+        { id: 'pencil', kr: '연필', en: 'Pencil', emoji: '✏️', phonetic: 'Yeon-pil', isEssential: true },
+        { id: 'clock', kr: '시계', en: 'Clock / Watch', emoji: '⏰', phonetic: 'Si-gye', isEssential: true },
+        { id: 'desk', kr: '책상', en: 'Desk (Too heavy!)', emoji: '🪑', phonetic: 'Chaek-sang', isEssential: false },
+        { id: 'school', kr: '학교', en: 'School Building', emoji: '🏫', phonetic: 'Hak-gyo', isEssential: false }
+      ];
+
+      const requiredCount = deskItems.filter(item => item.isEssential).length;
+
+      container.innerHTML = `
+        <div class="backpack-scenario-container">
+          <div class="backpack-station">
+            <div class="backpack-visual-target">
+              <span class="backpack-icon-huge">🎒</span>
+              <div>
+                <strong>가방 (School Backpack)</strong>
+                <div style="font-size:0.85rem; color:#0369a1;">Pack 3 essential stationery supplies!</div>
+              </div>
+            </div>
+            <div class="backpack-packed-slots" id="backpack-slots-container">
+              ${[0, 1, 2].map(i => `<div class="backpack-slot" id="pack-slot-${i}">🎒</div>`).join('')}
+            </div>
+          </div>
+
+          <div id="backpack-feedback-banner" class="counter-feedback-banner" style="display:none;"></div>
+
+          <div class="desk-shelf-container">
+            <span class="desk-shelf-title">Study Desk (책상 위 물건): Tap essential school items to pack:</span>
+            <div class="desk-items-grid" id="desk-items-grid">
+              ${deskItems.map(item => `
+                <button type="button" class="desk-item-card" data-item-id="${item.id}" data-item-kr="${item.kr}" data-item-en="${item.en}" data-item-emoji="${item.emoji}" data-essential="${item.isEssential}">
+                  <span class="desk-item-emoji">${item.emoji}</span>
+                  <span class="desk-item-kr">${item.kr}</span>
+                  <span class="desk-item-phonetic">${item.phonetic}</span>
+                  <span class="desk-item-en">${item.en}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      function showBackpackBanner(msg, isWarn = false) {
+        const banner = document.getElementById('backpack-feedback-banner');
+        if (!banner) return;
+        banner.className = isWarn ? 'counter-feedback-banner gentle-warn' : 'counter-feedback-banner success';
+        banner.textContent = msg;
+        banner.style.display = 'flex';
+      }
+
+      function updateBackpackSlots() {
+        for (let i = 0; i < 3; i++) {
+          const slot = document.getElementById(`pack-slot-${i}`);
+          if (!slot) continue;
+          if (i < self.backpackState.packedItems.length) {
+            slot.className = 'backpack-slot filled';
+            slot.textContent = self.backpackState.packedItems[i].emoji;
+          } else {
+            slot.className = 'backpack-slot';
+            slot.textContent = '🎒';
+          }
+        }
+      }
+
+      const itemCards = container.querySelectorAll('.desk-item-card');
+      itemCards.forEach(card => {
+        card.addEventListener('click', () => {
+          if (card.classList.contains('packed')) return;
+
+          const itemId = card.getAttribute('data-item-id');
+          const itemKr = card.getAttribute('data-item-kr');
+          const itemEn = card.getAttribute('data-item-en');
+          const itemEmoji = card.getAttribute('data-item-emoji');
+          const isEssential = card.getAttribute('data-essential') === 'true';
+
+          if (!isEssential) {
+            card.classList.add('wrong-shake');
+            setTimeout(() => card.classList.remove('wrong-shake'), 500);
+            SpeechAudio.speak('가방에 넣을 수 없어요', 'ko-KR', null, 'mom');
+            showBackpackBanner(`Whoops! ${itemKr} (${itemEn}) cannot fit inside your backpack! Pack small study items.`, true);
+            return;
+          }
+
+          // Pack item
+          self.backpackState.packedItems.push({ id: itemId, kr: itemKr, emoji: itemEmoji, en: itemEn });
+          card.classList.add('packed');
+          SpeechAudio.speak(`${itemKr}! 가방에 넣었어요!`, 'ko-KR', null, 'learner');
+          showBackpackBanner(`Packed ${itemKr} (${itemEn}) into your school backpack! ✨`, false);
+          updateBackpackSlots();
+
+          if (self.backpackState.packedItems.length >= requiredCount) {
+            setTimeout(() => {
+              SpeechAudio.speak('가방 준비 완료! 학교 잘 다녀오세요!', 'ko-KR', () => {
+                const feedbackCard = document.getElementById('etiquette-feedback-card');
+                const feedbackTitle = document.getElementById('etiquette-title');
+                const feedbackExp = document.getElementById('etiquette-explanation');
+                const feedbackNuance = document.getElementById('etiquette-nuance');
+                const continueBtn = document.getElementById('etiquette-continue-btn');
+
+                if (feedbackCard) {
+                  feedbackCard.className = 'etiquette-feedback-card correct';
+                  feedbackTitle.textContent = '등교 준비 완료! 🎒🏫 (Backpack Packed!)';
+                  feedbackExp.textContent = 'You identified essential stationery words (책 Book, 연필 Pencil, 시계 Clock) and packed your school bag with full confidence!';
+                  feedbackNuance.textContent = '💡 Etiquette tip: In Korean schools, organizing your desk and backpack neatly is an important daily habit called "정리정돈" (organizing well).';
+                  feedbackCard.style.display = 'flex';
+
+                  continueBtn.style.display = 'inline-flex';
+                  continueBtn.textContent = 'Finish Lesson & Collect Star ⭐';
+                  continueBtn.onclick = () => {
+                    self.finishScenario();
+                  };
+                }
+              }, 'mom');
+            }, 800);
+          }
+        });
+      });
+    },
+
+    /* ==========================================================================
+       SCENARIO: EMOTION & FEELING CHECK-IN (LESSON 8 - PLAYGROUND)
+       ========================================================================== */
+    renderEmotionCheck: function (container, scenarioData) {
+      if (!container) return;
+      const self = this;
+      this.emotionState.selectedEmotion = null;
+
+      const emotions = (scenarioData && scenarioData.emotions) || [
+        { id: 'happy', kr: '행복해요', en: 'Happy', emoji: '😊', phonetic: 'Haeng-bok-hae-yo', response: '우와, 정말 멋져요! 같이 신나게 놀아요!' },
+        { id: 'tired', kr: '피곤해요', en: 'Tired / Sleepy', emoji: '😴', phonetic: 'Pi-gon-hae-yo', response: '그렇군요! 벤치에서 조금 쉬어요, 괜찮아요!' },
+        { id: 'excited', kr: '신나요', en: 'Excited / Fun', emoji: '🥳', phonetic: 'Sin-na-yo', response: '최고예요! 그네 타러 갈까요?' },
+        { id: 'good', kr: '좋아요', en: 'Good / Feeling well', emoji: '👍', phonetic: 'Jo-a-yo', response: '좋은 하루예요! 힘차게 보내요!' }
+      ];
+
+      const minjunSvg = (typeof AvatarEngine !== 'undefined')
+        ? AvatarEngine.renderCharacterAvatar('MinjunVoxel')
+        : '👦';
+
+      container.innerHTML = `
+        <div class="emotion-scenario-container">
+          <div class="emotion-stage-header">
+            <div class="emotion-buddy-avatar" id="emotion-minjun-avatar">${minjunSvg}</div>
+            <div>
+              <strong style="color:#065f46;">Min-jun (민준)</strong>
+              <div style="font-size:0.9rem; color:#047857;">"오늘 기분이 어때요?" (How do you feel today?)</div>
+            </div>
+          </div>
+
+          <div id="emotion-feedback-banner" class="counter-feedback-banner" style="display:none;"></div>
+
+          <div class="emotion-cards-grid" id="emotion-cards-grid">
+            ${emotions.map(e => `
+              <button type="button" class="emotion-card-btn" data-emotion-id="${e.id}" data-emotion-kr="${e.kr}" data-emotion-en="${e.en}" data-emotion-response="${e.response}">
+                <span class="emotion-card-emoji">${e.emoji}</span>
+                <div class="emotion-card-details">
+                  <span class="emotion-card-kr">${e.kr}</span>
+                  <span class="emotion-card-phonetic">${e.phonetic}</span>
+                  <span class="emotion-card-en">${e.en}</span>
+                </div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      function showEmotionBanner(msg) {
+        const banner = document.getElementById('emotion-feedback-banner');
+        if (!banner) return;
+        banner.className = 'counter-feedback-banner success';
+        banner.textContent = msg;
+        banner.style.display = 'flex';
+      }
+
+      const emotionBtns = container.querySelectorAll('.emotion-card-btn');
+      emotionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          emotionBtns.forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+
+          const emotionId = btn.getAttribute('data-emotion-id');
+          const emotionKr = btn.getAttribute('data-emotion-kr');
+          const emotionEn = btn.getAttribute('data-emotion-en');
+          const responseText = btn.getAttribute('data-emotion-response');
+
+          self.emotionState.selectedEmotion = emotionId;
+
+          // Learner speaks their emotion
+          SpeechAudio.speak(`저는 오늘 ${emotionKr}!`, 'ko-KR', () => {
+            showEmotionBanner(`Min-jun says: "${responseText}"`);
+
+            // Min-jun responds empathetically
+            setTimeout(() => {
+              SpeechAudio.speak(responseText, 'ko-KR', () => {
+                const feedbackCard = document.getElementById('etiquette-feedback-card');
+                const feedbackTitle = document.getElementById('etiquette-title');
+                const feedbackExp = document.getElementById('etiquette-explanation');
+                const feedbackNuance = document.getElementById('etiquette-nuance');
+                const continueBtn = document.getElementById('etiquette-continue-btn');
+
+                if (feedbackCard) {
+                  feedbackCard.className = 'etiquette-feedback-card correct';
+                  feedbackTitle.textContent = '따뜻한 마음을 나누었어요! 🤝✨';
+                  feedbackExp.textContent = `You honestly shared your feeling with "${emotionKr}" (${emotionEn}). Min-jun listened attentively and supported your mood!`;
+                  feedbackNuance.textContent = '💡 Etiquette tip: Asking "기분이 어때요?" and replying with polite "~해요 / ~아요" is the fundamental building block of Korean peer empathy.';
+                  feedbackCard.style.display = 'flex';
+
+                  continueBtn.style.display = 'inline-flex';
+                  continueBtn.textContent = 'Finish Lesson & Collect Star ⭐';
+                  continueBtn.onclick = () => {
+                    self.finishScenario();
+                  };
+                }
+              }, 'minjun');
+            }, 600);
+          }, 'learner');
+        });
+      });
+    },
+
+    /* ==========================================================================
+       SCENARIO: BODY TAP / HEALTH CHECK (LESSON 9 - CLINIC SIMON SAYS)
+       ========================================================================== */
+    renderBodyTap: function (container, scenarioData) {
+      if (!container) return;
+      const self = this;
+      this.bodyState.stepIndex = 0;
+      this.bodyState.tappedParts = [];
+
+      const targets = (scenarioData && scenarioData.targets) || [
+        { id: 'eyes', kr: '눈', en: 'Eye', emoji: '👀', phonetic: 'Nun', promptKr: '눈을 가리켜 보세요!' },
+        { id: 'nose', kr: '코', en: 'Nose', emoji: '👃', phonetic: 'Ko', promptKr: '코를 가리켜 보세요!' },
+        { id: 'mouth', kr: '입', en: 'Mouth', emoji: '👄', phonetic: 'Ip', promptKr: '입을 가리켜 보세요!' },
+        { id: 'ears', kr: '귀', en: 'Ear', emoji: '👂', phonetic: 'Gwi', promptKr: '귀를 가리켜 보세요!' },
+        { id: 'hands', kr: '손', en: 'Hand', emoji: '✋', phonetic: 'Son', promptKr: '손을 가리켜 보세요!' }
+      ];
+
+      const nurseSvg = (typeof AvatarEngine !== 'undefined')
+        ? AvatarEngine.renderCharacterAvatar('NurseSong')
+        : '👩‍⚕️';
+
+      const learnerSvg = (typeof AvatarEngine !== 'undefined')
+        ? AvatarEngine.renderCharacterAvatar('LearnerBody', { scale: 1.1 })
+        : '🧑';
+
+      container.innerHTML = `
+        <div class="body-scenario-container">
+          <div class="clinic-nurse-bar">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:1.8rem;">🩺</span>
+              <div>
+                <strong>Nurse Song (송 선생님)</strong>
+                <div style="font-size:0.85rem; color:#1d4ed8;" id="clinic-prompt-display">"눈을 가리켜 보세요!" (Point to eyes!)</div>
+              </div>
+            </div>
+            <div class="art-mission-badge" id="clinic-progress-badge">Step 1 / ${targets.length}</div>
+          </div>
+
+          <div id="body-feedback-banner" class="counter-feedback-banner" style="display:none;"></div>
+
+          <div class="body-diagram-stage">
+            <div class="body-avatar-large" id="body-avatar-large">${learnerSvg}</div>
+            <div class="body-parts-grid" id="body-parts-grid">
+              ${targets.map(part => `
+                <button type="button" class="body-part-btn" data-part-id="${part.id}" data-part-kr="${part.kr}" data-part-en="${part.en}">
+                  <span class="body-part-icon">${part.emoji}</span>
+                  <span class="body-part-kr">${part.kr}</span>
+                  <span class="body-part-phonetic">${part.phonetic}</span>
+                  <span class="body-part-en">${part.en}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      function showBodyBanner(msg, isWarn = false) {
+        const banner = document.getElementById('body-feedback-banner');
+        if (!banner) return;
+        banner.className = isWarn ? 'counter-feedback-banner gentle-warn' : 'counter-feedback-banner success';
+        banner.textContent = msg;
+        banner.style.display = 'flex';
+      }
+
+      function updateClinicStep() {
+        const curTarget = targets[self.bodyState.stepIndex];
+        const promptDisplay = document.getElementById('clinic-prompt-display');
+        const badge = document.getElementById('clinic-progress-badge');
+
+        if (promptDisplay && curTarget) {
+          promptDisplay.textContent = `"${curTarget.promptKr}" (${curTarget.promptEn || 'Point to ' + curTarget.en + '!'})`;
+          SpeechAudio.speak(curTarget.promptKr, 'ko-KR', null, 'nurse');
+        }
+        if (badge) {
+          badge.textContent = `Step ${self.bodyState.stepIndex + 1} / ${targets.length}`;
+        }
+      }
+
+      const partBtns = container.querySelectorAll('.body-part-btn');
+      partBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const partId = btn.getAttribute('data-part-id');
+          const partKr = btn.getAttribute('data-part-kr');
+          const partEn = btn.getAttribute('data-part-en');
+          const curTarget = targets[self.bodyState.stepIndex];
+
+          if (partId !== curTarget.id) {
+            btn.classList.add('wrong-shake');
+            setTimeout(() => btn.classList.remove('wrong-shake'), 500);
+            SpeechAudio.speak(`${curTarget.kr}을 가리켜 보세요`, 'ko-KR', null, 'nurse');
+            showBodyBanner(`Nurse asked for ${curTarget.kr} (${curTarget.en}), but you tapped ${partKr}! Try again!`, true);
+            return;
+          }
+
+          // Correct body part tapped!
+          btn.classList.add('correct-tap');
+          SpeechAudio.speak(`여기 ${partKr}이에요!`, 'ko-KR', null, 'learner');
+          showBodyBanner(`Correct! Found "${partKr}" (${partEn})! ✨`, false);
+
+          self.bodyState.stepIndex++;
+
+          if (self.bodyState.stepIndex < targets.length) {
+            setTimeout(() => {
+              updateClinicStep();
+            }, 1200);
+          } else {
+            // Health check complete!
+            setTimeout(() => {
+              SpeechAudio.speak('건강 검진 완벽해요! 아주 잘했어요!', 'ko-KR', () => {
+                const feedbackCard = document.getElementById('etiquette-feedback-card');
+                const feedbackTitle = document.getElementById('etiquette-title');
+                const feedbackExp = document.getElementById('etiquette-explanation');
+                const feedbackNuance = document.getElementById('etiquette-nuance');
+                const continueBtn = document.getElementById('etiquette-continue-btn');
+
+                if (feedbackCard) {
+                  feedbackCard.className = 'etiquette-feedback-card correct';
+                  feedbackTitle.textContent = '건강 검진 완료! 🩺 Champion!';
+                  feedbackExp.textContent = 'You accurately pointed to all 5 Korean body senses (눈 Eyes, 코 Nose, 입 Mouth, 귀 Ears, 손 Hands) without hesitation!';
+                  feedbackNuance.textContent = '💡 Linguistic tip: Korean body words are compact one-syllable native Korean words (눈, 코, 입, 귀, 손, 발) fundamental to everyday health and sensory expressions.';
+                  feedbackCard.style.display = 'flex';
+
+                  continueBtn.style.display = 'inline-flex';
+                  continueBtn.textContent = 'Finish Lesson & Collect Star ⭐';
+                  continueBtn.onclick = () => {
+                    self.finishScenario();
+                  };
+                }
+              }, 'nurse');
+            }, 1000);
+          }
+        });
+      });
+    },
+
     handleOptionSelect: function (opt, btnElement, turn) {
       const feedbackCard = document.getElementById('etiquette-feedback-card');
       const feedbackTitle = document.getElementById('etiquette-title');
@@ -1095,6 +1662,21 @@
       }
     },
 
+    triggerConfetti: function () {
+      const stage = document.getElementById('scenario-stage') || document.body;
+      const colors = ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#ef4444'];
+      for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = `${Math.random() * 0.8}s`;
+        piece.style.transform = `scale(${0.6 + Math.random() * 0.8})`;
+        stage.appendChild(piece);
+        setTimeout(() => piece.remove(), 3200);
+      }
+    },
+
     finishScenario: function () {
       const arena = document.getElementById('dialogue-arena');
       const completionCard = document.getElementById('scenario-completion-card');
@@ -1116,6 +1698,9 @@
       if (title) title.textContent = completion ? completion.title : 'Scenario Accomplished!';
       if (summary) summary.textContent = completion ? completion.summary : 'You completed the conversational exchange!';
       if (rewardPill) rewardPill.textContent = completion ? completion.rewardText : '⭐ 1 Star Earned in this Lesson!';
+
+      // Celebration confetti effect
+      this.triggerConfetti();
 
       // Record scenario completion and award star in ProfileManager
       ProfileManager.recordScenarioCompletion(lesson.id);
