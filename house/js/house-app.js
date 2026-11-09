@@ -292,6 +292,9 @@
     inputPlayerName.value = state.playerName;
     inputBotName.value = state.botName;
 
+    // Instantiate House Engine
+    let engine = null;
+
     // Resize Canvas to Window
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -304,8 +307,9 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Instantiate House Engine
-    const engine = new window.HouseEngine(canvas, window.HOUSE_DATA);
+    engine = new window.HouseEngine(canvas, window.HOUSE_DATA);
+    engine.width = canvas.width;
+    engine.height = canvas.height;
 
     // Update Avatar Graphics
     function refreshAvatars() {
