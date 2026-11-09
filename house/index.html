@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>House Architect Demo - 17x17 Blueprint &amp; 4-Zone Layout</title>
+  <link rel="stylesheet" href="css/house.css">
+  <!-- Procedural DiceBear Voxel Engine -->
+  <script src="../vendor/dicebear-voxel.js"></script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- Main 2D Canvas Viewport -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- In-Game Corner HUD Badges -->
+    <div class="hud-corner">
+      <!-- Demo Title Badge -->
+      <div class="hud-pill hud-title-badge">
+        <span>🏠 House Architect Demo</span>
+      </div>
+
+      <!-- Current Zone / Room Indicator -->
+      <div class="hud-pill hud-room-badge" id="hud-zone-badge">
+        <span class="zone-icon">🛋️</span>
+        <span class="zone-name">Living Room</span>
+      </div>
+
+      <!-- Player Info Pill -->
+      <div class="hud-pill">
+        <div class="hud-avatar" id="hud-player-avatar"></div>
+        <div class="hud-meta">
+          <span class="hud-label">Player</span>
+          <span class="hud-name" id="hud-player-name">Learner Kim</span>
+        </div>
+      </div>
+
+      <!-- Companion Bot Pill -->
+      <div class="hud-pill">
+        <div class="hud-avatar bot" id="hud-bot-avatar"></div>
+        <div class="hud-meta">
+          <span class="hud-label">Companion</span>
+          <span class="hud-name" id="hud-bot-name">SparkyBot</span>
+        </div>
+      </div>
+
+      <!-- Customize Toggle Button -->
+      <button id="btn-customize" class="hud-btn">⚙️ Customize Avatar</button>
+    </div>
+
+    <!-- Controls Legend (Desktop) -->
+    <div class="controls-legend">
+      <span>Move: <span class="key-badge">WASD</span> or <span class="key-badge">Arrows</span></span>
+      <span>•</span>
+      <span>Front Door (South) &amp; Back Door (North) connect to yards</span>
+      <span>•</span>
+      <span>VoxelBot smoothly follows your exploration</span>
+    </div>
+
+    <!-- Virtual On-Screen D-Pad (Touch / Mobile) -->
+    <div class="virtual-dpad" id="virtual-dpad">
+      <button class="dpad-btn" id="dpad-up" aria-label="Up">▲</button>
+      <button class="dpad-btn" id="dpad-left" aria-label="Left">◀</button>
+      <button class="dpad-btn" id="dpad-down" aria-label="Down">▼</button>
+      <button class="dpad-btn" id="dpad-right" aria-label="Right">▶</button>
+    </div>
+
+    <!-- Character & Companion Customizer Modal -->
+    <div id="screen-selection" class="overlay-screen hidden">
+      <div class="card-modal">
+        <div class="modal-header">
+          <h1>House Resident Customization</h1>
+          <p>Personalize your avatar &amp; companion bot for the house tour</p>
+        </div>
+
+        <div class="modal-body">
+          <div class="customizer-grid">
+            <!-- Player Customizer -->
+            <div class="custom-panel">
+              <h2>🧑 Your Avatar</h2>
+              <div class="avatar-preview-box" id="preview-player-avatar"></div>
+              <div class="input-group">
+                <label for="input-player-name">Resident Name</label>
+                <input type="text" id="input-player-name" maxlength="20" placeholder="e.g. Minjun Kim">
+              </div>
+
+              <div class="selector-row">
+                <div class="input-group half">
+                  <label for="select-player-top">Hairstyle</label>
+                  <select id="select-player-top" class="custom-select"></select>
+                </div>
+                <div class="input-group half">
+                  <label for="select-player-outfit">Outfit</label>
+                  <select id="select-player-outfit" class="custom-select"></select>
+                </div>
+              </div>
+
+              <div class="selector-row">
+                <div class="input-group half">
+                  <label for="select-player-glasses">Glasses</label>
+                  <select id="select-player-glasses" class="custom-select"></select>
+                </div>
+                <div class="input-group half">
+                  <label for="select-player-hair-color">Hair Color</label>
+                  <select id="select-player-hair-color" class="custom-select"></select>
+                </div>
+              </div>
+
+              <button class="btn-secondary" id="btn-random-player">🎲 Randomize Resident</button>
+            </div>
+
+            <!-- Companion Bot Customizer -->
+            <div class="custom-panel">
+              <h2>🤖 Companion Bot</h2>
+              <div class="avatar-preview-box" id="preview-bot-avatar"></div>
+              <div class="input-group">
+                <label for="input-bot-name">Companion Name</label>
+                <input type="text" id="input-bot-name" maxlength="20" placeholder="e.g. SparkyBot">
+              </div>
+
+              <div class="selector-row">
+                <div class="input-group half">
+                  <label for="select-bot-body">Chassis Body</label>
+                  <select id="select-bot-body" class="custom-select"></select>
+                </div>
+                <div class="input-group half">
+                  <label for="select-bot-accent">Armor Accent</label>
+                  <select id="select-bot-accent" class="custom-select"></select>
+                </div>
+              </div>
+
+              <div class="selector-row">
+                <div class="input-group full">
+                  <label for="select-bot-glow">Visor / Glow</label>
+                  <select id="select-bot-glow" class="custom-select"></select>
+                </div>
+              </div>
+
+              <button class="btn-secondary" id="btn-random-bot">🎲 Randomize Companion</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-close-modal" class="btn-primary">Return to House 🏠</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modular Scripts -->
+  <script src="js/house-data.js"></script>
+  <script src="js/house-engine.js"></script>
+  <script src="js/house-app.js"></script>
+</body>
+</html>
