@@ -897,7 +897,7 @@
 
       // Hide student choices during teacher speech
       this.setChoicesVisibility(false);
-      this.setNextButtonState('Translate &raquo;', () => {
+      this.setNextButtonState('Translate »', () => {
         this.stepTBotEn(beat, playerName, botName);
       });
 
@@ -927,7 +927,7 @@
       );
 
       this.setChoicesVisibility(false);
-      this.setNextButtonState('Your Turn &raquo;', () => {
+      this.setNextButtonState('Your Turn »', () => {
         this.stepStudentChoice(beat, playerName, botName);
       });
 
@@ -990,7 +990,7 @@
           this.finishScenario();
         });
       } else {
-        this.setNextButtonState('Next Beat &raquo;', () => {
+        this.setNextButtonState('Next Beat »', () => {
           this.goToBeat(this.currentBeatIndex + 1);
         });
       }
@@ -1077,7 +1077,7 @@
     setNextButtonState(label, onClick) {
       const btn = document.getElementById('d-btn-next');
       if (!btn) return;
-      btn.textContent = label;
+      btn.innerHTML = label;
       btn.disabled = false;
       this.currentNextAction = onClick;
     }
