@@ -744,6 +744,15 @@
         frameImages: {}
       };
 
+      // NPCs: Teacher Park & T-Bot Companion
+      this.teacher = null;
+      this.tbot = null;
+      this.teacherSvg = null;
+      this.tBotSvg = null;
+      this.playerSvg = null;
+      this.botSvg = null;
+      this.initNpcAvatars();
+
       // Camera
       this.camera = {
         x: this.player.x,
@@ -962,6 +971,7 @@
     setPlayerAvatar(svgString, name) {
       if (name) this.player.name = name;
       if (!svgString) return;
+      this.playerSvg = svgString;
       this.player.frameImages = createImagesFromSvg(svgString, false);
       this.player.img = this.player.frameImages['default'];
     }
@@ -969,8 +979,106 @@
     setBotAvatar(svgString, name) {
       if (name) this.bot.name = name;
       if (!svgString) return;
+      this.botSvg = svgString;
       this.bot.frameImages = createImagesFromSvg(svgString, true);
       this.bot.img = this.bot.frameImages['default'];
+    }
+
+    initNpcAvatars() {
+      if (typeof window !== 'undefined' && window.DiceBearVoxel) {
+        try {
+          if (typeof window.DiceBearVoxel.createVoxelAvatar === 'function') {
+            this.teacherSvg = window.DiceBearVoxel.createVoxelAvatar({
+              seed: 'TeacherParkVoxel',
+              backgroundColor: [],
+              size: 320,
+              topVariant: ['shoulderLength'],
+              topProbability: 100,
+              outfitVariant: ['suit'],
+              outfitProbability: 100,
+              glassesVariant: ['round'],
+              glassesProbability: 100,
+              hairColor: ['#241a14']
+            });
+          }
+          if (typeof window.DiceBearVoxel.createCompanionAvatar === 'function') {
+            this.tBotSvg = window.DiceBearVoxel.createCompanionAvatar('voxel-bot', {
+              seed: 'TBotGold',
+              backgroundColor: [],
+              size: 320,
+              bodyColor: ['#ffd43b'],
+              accentColor: ['#7a4a2d'],
+              glowColor: ['#ffd43b']
+            });
+          }
+        } catch (e) {
+          console.warn('Failed generating NPC DiceBear SVGs', e);
+        }
+      }
+    }
+
+    spawnTeacherAndBot() {
+      const doorX = (this.door ? this.door.x : 32) * TILE + TILE / 2;
+      const doorY = ((this.door ? this.door.y : 38) + 1.2) * TILE;
+
+      // Targets inside room: living room dining area / rug
+      const targetTeacherX = doorX + TILE * 1.5;
+      const targetTeacherY = doorY - TILE * 4.5;
+      const targetBotX = targetTeacherX + 38;
+      const targetBotY = targetTeacherY + 12;
+
+      this.teacher = {
+        x: doorX,
+        y: doorY,
+        targetX: targetTeacherX,
+        targetY: targetTeacherY,
+        radius: 18,
+        speed: 135,
+        facing: 'up',
+        name: 'Teacher Park',
+        moving: true,
+        walkT: 0,
+        img: null,
+        frameImages: this.teacherSvg ? createImagesFromSvg(this.teacherSvg, false) : {}
+      };
+      if (this.teacher.frameImages['default']) {
+        this.teacher.img = this.teacher.frameImages['default'];
+      }
+
+      this.tbot = {
+        x: doorX - 25,
+        y: doorY + 15,
+        targetX: targetBotX,
+        targetY: targetBotY,
+        radius: 14,
+        speed: 130,
+        facing: 'up',
+        name: 'T-Bot',
+        moving: true,
+        rollT: 0,
+        img: null,
+        frameImages: this.tBotSvg ? createImagesFromSvg(this.tBotSvg, true) : {}
+      };
+      if (this.tbot.frameImages['default']) {
+        this.tbot.img = this.tbot.frameImages['default'];
+      }
+    }
+
+    dismissTeacherAndBot() {
+      if (!this.teacher && !this.tbot) return;
+      const doorX = (this.door ? this.door.x : 32) * TILE + TILE / 2;
+      const doorY = ((this.door ? this.door.y : 38) + 2) * TILE;
+
+      if (this.teacher) {
+        this.teacher.targetX = doorX;
+        this.teacher.targetY = doorY;
+        this.teacher.moving = true;
+      }
+      if (this.tbot) {
+        this.tbot.targetX = doorX - 20;
+        this.tbot.targetY = doorY + 10;
+        this.tbot.moving = true;
+      }
     }
 
     canMoveTo(x, y, radius) {
@@ -1058,7 +1166,42 @@
         this.bot.rollT = 0;
       }
 
-      // 3. Camera Tracking
+      // 3. Teacher & T-Bot NPC Movement Logic
+      if (this.teacher && this.teacher.moving) {
+        const dist = Math.hypot(this.teacher.targetX - this.teacher.x, this.teacher.targetY - this.teacher.y);
+        if (dist > 4) {
+          const step = Math.min(dist, this.teacher.speed * dt);
+          const angle = Math.atan2(this.teacher.targetY - this.teacher.y, this.teacher.targetX - this.teacher.x);
+          this.teacher.x += Math.cos(angle) * step;
+          this.teacher.y += Math.sin(angle) * step;
+          this.teacher.walkT = (this.teacher.walkT + dt * 2.5) % 1.0;
+          this.teacher.facing = Math.abs(Math.cos(angle)) > Math.abs(Math.sin(angle))
+            ? (Math.cos(angle) > 0 ? 'right' : 'left')
+            : (Math.sin(angle) > 0 ? 'down' : 'up');
+        } else {
+          this.teacher.moving = false;
+          this.teacher.walkT = 0;
+          this.teacher.facing = 'left'; // Face towards player / living room
+        }
+      }
+
+      if (this.tbot && this.tbot.moving) {
+        const dist = Math.hypot(this.tbot.targetX - this.tbot.x, this.tbot.targetY - this.tbot.y);
+        if (dist > 4) {
+          const step = Math.min(dist, this.tbot.speed * dt);
+          const angle = Math.atan2(this.tbot.targetY - this.tbot.y, this.tbot.targetX - this.tbot.x);
+          this.tbot.x += Math.cos(angle) * step;
+          this.tbot.y += Math.sin(angle) * step;
+          this.tbot.rollT = (this.tbot.rollT + dt * 2.4) % 1.0;
+          this.tbot.facing = Math.cos(angle) > 0 ? 'right' : 'left';
+        } else {
+          this.tbot.moving = false;
+          this.tbot.rollT = 0;
+          this.tbot.facing = 'left';
+        }
+      }
+
+      // 4. Camera Tracking
       const camLerp = Math.min(1.0, 5.0 * dt);
       this.camera.x += (this.player.x - this.camera.x) * camLerp;
       this.camera.y += (this.player.y - this.camera.y) * camLerp;
@@ -1204,6 +1347,22 @@
         record: this.bot
       });
 
+      if (this.teacher) {
+        drawList.push({
+          type: 'teacher',
+          y: this.teacher.y + this.teacher.radius,
+          record: this.teacher
+        });
+      }
+
+      if (this.tbot) {
+        drawList.push({
+          type: 'tbot',
+          y: this.tbot.y + this.tbot.radius,
+          record: this.tbot
+        });
+      }
+
       // Sort by feet/bottom Y for correct depth sorting
       drawList.sort((a, b) => a.y - b.y);
 
@@ -1221,6 +1380,10 @@
           this.renderPlayer(ctx);
         } else if (item.type === 'bot') {
           this.renderBot(ctx);
+        } else if (item.type === 'teacher') {
+          this.renderHumanNpc(ctx, this.teacher, '박 선생님');
+        } else if (item.type === 'tbot') {
+          this.renderBotNpc(ctx, this.tbot, 'T-Bot');
         }
       }
 
@@ -1424,6 +1587,127 @@
 
       // Overhead nameplate removed per directive (already displayed in corner HUD)
 
+      ctx.restore();
+    }
+
+    renderHumanNpc(ctx, npc, label) {
+      if (!npc) return;
+      const t = this.gameTime;
+      const npcHeight = Math.round(TILE * 1.72);
+      const npcWidth = Math.round(npcHeight * (128 / 128));
+
+      let translateY = 0;
+      let translateX = 0;
+      let rotate = 0;
+      let scaleX = 1;
+      let scaleY = 1;
+      let shadowScale = 1;
+      let frame = 'default';
+
+      if (npc.moving) {
+        const stepArc = Math.sin(npc.walkT * Math.PI);
+        const wobble = Math.sin(npc.walkT * Math.PI * 2);
+        translateY = -6 * stepArc;
+        rotate = (3.2 * Math.PI / 180) * wobble;
+        scaleX = 1 - 0.03 * stepArc;
+        scaleY = 1 + 0.04 * stepArc;
+        shadowScale = 1 - 0.25 * stepArc;
+      } else {
+        const glanceCycle = (t % 5.0) / 5.0;
+        if (glanceCycle >= 0.2 && glanceCycle <= 0.35) frame = 'look-right';
+        else if (glanceCycle >= 0.7 && glanceCycle <= 0.85) frame = 'look-left';
+      }
+
+      ctx.save();
+      ctx.translate(Math.round(npc.x), Math.round(npc.y));
+
+      // Cast shadow
+      ctx.save();
+      ctx.globalAlpha = 0.35 * shadowScale;
+      ctx.fillStyle = ITEM_SHADOW;
+      ctx.beginPath();
+      ctx.ellipse(0, 16, 17 * shadowScale, 8 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      const currentImg = (npc.frameImages && npc.frameImages[frame] && npc.frameImages[frame].complete)
+        ? npc.frameImages[frame]
+        : (npc.img && npc.img.complete ? npc.img : null);
+
+      if (currentImg) {
+        ctx.save();
+        ctx.translate(translateX, translateY);
+        if (rotate !== 0) ctx.rotate(rotate);
+        if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
+        if (npc.facing === 'right') {
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(currentImg, -npcWidth / 2, -npcHeight + 8, npcWidth, npcHeight);
+        ctx.restore();
+      }
+
+      // Overhead name badge for NPC
+      this.drawNameplate(ctx, label, 0, -npcHeight, false);
+      ctx.restore();
+    }
+
+    renderBotNpc(ctx, bot, label) {
+      if (!bot) return;
+      const t = this.gameTime;
+      const botHeight = Math.round(TILE * 1.05);
+      const botWidth = botHeight;
+
+      let translateY = 0;
+      let translateX = 0;
+      let rotate = 0;
+      let scaleX = 1;
+      let scaleY = 1;
+      let shadowScale = 1;
+      let frame = 'default';
+
+      if (bot.moving) {
+        const rollCurve = Math.sin(bot.rollT * Math.PI);
+        const forwardLean = -(4.8 * Math.PI / 180) * rollCurve;
+        rotate = forwardLean;
+        scaleX = 1 + 0.03 * rollCurve;
+        scaleY = 1 - 0.025 * rollCurve;
+        shadowScale = 1.08;
+      } else {
+        const blinkCycle = (t % 3.0) / 3.0;
+        if (blinkCycle >= 0.88 && blinkCycle <= 0.96) {
+          frame = 'blink';
+        }
+      }
+
+      ctx.save();
+      ctx.translate(Math.round(bot.x), Math.round(bot.y));
+
+      ctx.save();
+      ctx.globalAlpha = 0.35 * shadowScale;
+      ctx.fillStyle = ITEM_SHADOW;
+      ctx.beginPath();
+      ctx.ellipse(0, 14, 15 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      const currentImg = (bot.frameImages && bot.frameImages[frame] && bot.frameImages[frame].complete)
+        ? bot.frameImages[frame]
+        : (bot.img && bot.img.complete ? bot.img : null);
+
+      if (currentImg) {
+        ctx.save();
+        ctx.translate(translateX, translateY);
+        if (rotate !== 0) ctx.rotate(bot.facing === 'right' ? rotate : -rotate);
+        if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
+        if (bot.facing === 'right') {
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(currentImg, -botWidth / 2, -botHeight + 10, botWidth, botHeight);
+        ctx.restore();
+      }
+
+      // Overhead name badge for Bot NPC
+      this.drawNameplate(ctx, label, 0, -botHeight, true);
       ctx.restore();
     }
 

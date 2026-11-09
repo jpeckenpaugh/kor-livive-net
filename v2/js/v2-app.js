@@ -294,6 +294,7 @@
       this.hudBotAvatar = document.getElementById('hud-bot-avatar');
       this.hudBotName = document.getElementById('hud-bot-name');
       this.btnCustomize = document.getElementById('btn-customize');
+      this.btnLesson1 = document.getElementById('btn-lesson1');
 
       // Virtual D-pad / Joystick buttons
       this.dpadUp = document.getElementById('dpad-up');
@@ -424,6 +425,18 @@
         this.showSelectionScreen();
       });
 
+      // Launch Lesson 1 in HUD
+      if (this.btnLesson1) {
+        this.btnLesson1.addEventListener('click', () => {
+          if (!this.dialogue && this.engine) {
+            this.dialogue = new window.V2DialogueManager(this.engine, this);
+          }
+          if (this.dialogue) {
+            this.dialogue.startScenario();
+          }
+        });
+      }
+
       // Keyboard Controls
       window.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
@@ -552,6 +565,15 @@
       this.engine.setBotAvatar(botSvg, this.state.botName);
 
       this.updateHUD(playerSvg, botSvg);
+
+      // Initialize Dialogue Manager and trigger Lesson 1 home tutoring scenario
+      if (!this.dialogue) {
+        this.dialogue = new window.V2DialogueManager(this.engine, this);
+      }
+      // Start scenario after entering home
+      setTimeout(() => {
+        this.dialogue.startScenario();
+      }, 1200);
     }
 
     loop(currentTime) {
