@@ -32,9 +32,9 @@
       height: 17
     },
 
-    // Front & Back Doors
-    frontDoor: { x: 32, y: 38 },
-    backDoor: { x: 32, y: 22 },
+    // Front & Back Doors (2 tiles wide each for smooth, effortless passage)
+    frontDoor: { x: 31, y: 38, width: 2 },
+    backDoor: { x: 31, y: 22, width: 2 },
 
     // Player spawn (inside the home near the front door)
     spawn: { x: 32, y: 36 },
@@ -54,15 +54,14 @@
     // Bathroom Enclosure: Top-left private room
     // Bounds: x: 24 to 29 (inner x: 25 to 28), y: 22 to 27 (inner y: 23 to 26)
     // Partition walls on the east side (x: 29, y: 23..27) and south side (y: 27, x: 25..29)
-    // Doorway opening at (29, 25) on the east partition wall
+    // Doorway opening at (29, 24..25) on the east partition wall (2 tiles high for easy access)
     bathroom: {
       bounds: { x1: 24, y1: 22, x2: 29, y2: 27 },
-      // Interior partition wall segments
+      // Interior partition wall segments (leaving y: 24 and y: 25 open as a wide doorway)
       walls: [
         // East partition wall
         { x: 29, y: 23 },
-        { x: 29, y: 24 },
-        // (29, 25) is doorway
+        // (29, 24) and (29, 25) are doorway opening
         { x: 29, y: 26 },
         { x: 29, y: 27 },
         // South partition wall
@@ -243,18 +242,36 @@
         center: '#fef3c7'
       }
     },
+    'modern-tv': {
+      id: 'modern-tv',
+      label: 'Ultra-Slim Modern Smart TV (8x4)',
+      zone: 'living',
+      icon: '🖥️',
+      size: { w: 8, h: 4 },
+      solid: true,
+      shape: 'modern-tv',
+      colors: {
+        bezel: '#0f172a',
+        screen: '#020617',
+        glow: '#38bdf8',
+        stand: '#334155',
+        led: '#22d3ee'
+      }
+    },
     'retro-tv': {
       id: 'retro-tv',
-      label: 'Retro Color TV Console',
+      label: 'Ultra-Slim Modern Smart TV',
       zone: 'living',
       icon: '📺',
-      size: { w: 2, h: 1 },
+      size: { w: 8, h: 4 },
       solid: true,
-      shape: 'retro-tv',
+      shape: 'modern-tv',
       colors: {
-        wood: '#573318',
-        screen: '#1e293b',
-        glow: '#38bdf8'
+        bezel: '#0f172a',
+        screen: '#020617',
+        glow: '#38bdf8',
+        stand: '#334155',
+        led: '#22d3ee'
       }
     },
     'living-bookshelf': {
@@ -464,21 +481,21 @@
 
     // === ZONE 2: Cozy Living Room (Bottom-Left: x: 25..31, y: 29..37) ===
     // Living room large rug
-    { itemId: 'living-rug', x: 26, y: 31 },
-    // Sofa facing east/table
-    { itemId: 'couch', x: 25, y: 32 },
-    // Coffee table next to sofa
-    { itemId: 'coffee-table', x: 27, y: 32 },
-    // Armchair facing into living room
-    { itemId: 'armchair', x: 27, y: 34 },
-    // Retro TV on north living wall (y: 29)
-    { itemId: 'retro-tv', x: 26, y: 29 },
+    { itemId: 'living-rug', x: 26, y: 33 },
+    // Sofa facing north toward TV
+    { itemId: 'couch', x: 26, y: 34 },
+    // Coffee table in front of sofa
+    { itemId: 'coffee-table', x: 26, y: 32 },
+    // Armchair angled toward living room
+    { itemId: 'armchair', x: 29, y: 33 },
+    // Modern Flat-Screen TV spanning across living room north partition (8 tiles wide)
+    { itemId: 'modern-tv', x: 24, y: 28 },
     // Bookshelf along west wall
-    { itemId: 'living-bookshelf', x: 25, y: 35 },
+    { itemId: 'living-bookshelf', x: 25, y: 36 },
     // Floor lamp in the corner
-    { itemId: 'floor-lamp', x: 25, y: 30 },
+    { itemId: 'floor-lamp', x: 30, y: 35 },
     // Plant in corner
-    { itemId: 'living-plant', x: 28, y: 35 },
+    { itemId: 'living-plant', x: 25, y: 32 },
 
     // === ZONE 3: Kitchen & Dining (Bottom-Right: x: 33..39, y: 29..37) ===
     // Refrigerator in corner

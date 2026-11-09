@@ -199,7 +199,7 @@
     const seed = state.botSeed || 'SparkyBot';
     const look = state.botLook || {};
 
-    if (window.DiceBearVoxel && typeof window.DiceBearVoxel.createVoxelBot === 'function') {
+    if (window.DiceBearVoxel && typeof window.DiceBearVoxel.createCompanionAvatar === 'function') {
       try {
         const options = {
           seed: String(seed),
@@ -218,8 +218,7 @@
           options.glowColor = [look.glowColor.replace('#', '')];
         }
 
-        const bot = window.DiceBearVoxel.createVoxelBot(options);
-        return bot.toString();
+        return window.DiceBearVoxel.createCompanionAvatar('voxel-bot', options);
       } catch (e) {
         console.error('Error generating bot avatar', e);
       }

@@ -361,36 +361,154 @@
     ctx.fill();
   }
 
-  function drawRetroTv(ctx, box, colors) {
-    // Wooden console
-    ctx.fillStyle = colors.wood || '#573318';
-    ctx.fillRect(box.left + 6, box.top + 6, box.width - 12, box.height - 12);
-    ctx.strokeStyle = '#291708';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(box.left + 6, box.top + 6, box.width - 12, box.height - 12);
+  function drawModernTv(ctx, box, colors) {
+    const bezelColor = colors.bezel || '#0f172a';
+    const standColor = colors.stand || '#334155';
+    const ledColor = colors.led || '#22d3ee';
 
-    // CRT Screen with glow
-    ctx.fillStyle = colors.screen || '#1e293b';
+    // 1. Ambient wall-glow bias behind the TV
+    const glowGrad = ctx.createRadialGradient(
+      box.left + box.width / 2, box.top + box.height * 0.42,
+      box.width * 0.1,
+      box.left + box.width / 2, box.top + box.height * 0.42,
+      box.width * 0.55
+    );
+    glowGrad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+    glowGrad.addColorStop(0.5, 'rgba(129, 140, 248, 0.22)');
+    glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(box.left - 20, box.top - 15, box.width + 40, box.height + 30);
+
+    // 2. Sleek Soundbar & Media Console underneath the TV
+    const barTop = box.bottom - 22;
+    const barHeight = 16;
+    const barWidth = box.width * 0.72;
+    const barLeft = box.left + (box.width - barWidth) / 2;
+
+    // Soundbar shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     ctx.beginPath();
-    ctx.roundRect(box.left + 10, box.top + 10, box.width - 34, box.height - 20, 6);
+    ctx.ellipse(barLeft + barWidth / 2, barTop + barHeight + 2, barWidth * 0.5, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Antennae
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 2;
+    // Soundbar body (matte graphite metal)
+    ctx.fillStyle = '#1e293b';
     ctx.beginPath();
-    ctx.moveTo(box.left + box.width / 2 - 4, box.top + 6);
-    ctx.lineTo(box.left + box.width / 2 - 14, box.top - 6);
-    ctx.moveTo(box.left + box.width / 2 + 4, box.top + 6);
-    ctx.lineTo(box.left + box.width / 2 + 14, box.top - 6);
+    ctx.roundRect(barLeft, barTop, barWidth, barHeight, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Dials
-    ctx.fillStyle = '#fde047';
+    // Soundbar acoustic fabric grill pattern
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(barLeft + 12, barTop + 3, barWidth - 24, barHeight - 6);
+
+    // Soundbar power indicator LED dot
+    ctx.fillStyle = ledColor;
     ctx.beginPath();
-    ctx.arc(box.left + box.width - 16, box.top + 18, 4, 0, Math.PI * 2);
-    ctx.arc(box.left + box.width - 16, box.top + 28, 3, 0, Math.PI * 2);
+    ctx.arc(barLeft + barWidth / 2, barTop + barHeight / 2, 2, 0, Math.PI * 2);
     ctx.fill();
+
+    // TV sleek metal dual stand legs
+    ctx.fillStyle = standColor;
+    const legOffset = box.width * 0.22;
+    // Left leg
+    ctx.fillRect(box.left + legOffset, barTop - 12, 10, 14);
+    ctx.fillRect(box.left + legOffset - 12, barTop - 2, 34, 4);
+    // Right leg
+    ctx.fillRect(box.right - legOffset - 10, barTop - 12, 10, 14);
+    ctx.fillRect(box.right - legOffset - 22, barTop - 2, 34, 4);
+
+    // 3. Ultra-Slim TV Bezel / Frame
+    const tvMarginX = 14;
+    const tvMarginTop = 10;
+    const tvWidth = box.width - tvMarginX * 2;
+    const tvHeight = box.height - tvMarginTop - 34; // leave room for soundbar
+    const tvLeft = box.left + tvMarginX;
+    const tvTop = box.top + tvMarginTop;
+
+    // Bezel outer drop shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.beginPath();
+    ctx.roundRect(tvLeft + 2, tvTop + 4, tvWidth, tvHeight, 6);
+    ctx.fill();
+
+    // Bezel body (matte graphite / dark aluminum)
+    ctx.fillStyle = bezelColor;
+    ctx.beginPath();
+    ctx.roundRect(tvLeft, tvTop, tvWidth, tvHeight, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 4. Widescreen 16:9 Display Area
+    const screenPadding = 4;
+    const scrX = tvLeft + screenPadding;
+    const scrY = tvTop + screenPadding;
+    const scrW = tvWidth - screenPadding * 2;
+    const scrH = tvHeight - screenPadding * 2;
+
+    // Display background: scenic mountain / city skyline sunset wallpaper
+    const screenGrad = ctx.createLinearGradient(scrX, scrY, scrX, scrY + scrH);
+    screenGrad.addColorStop(0, '#0369a1');   // Deep ocean sky
+    screenGrad.addColorStop(0.35, '#38bdf8'); // Sky glow
+    screenGrad.addColorStop(0.65, '#f472b6'); // Sunset twilight pink
+    screenGrad.addColorStop(1, '#1e1b4b');   // Deep midnight ground
+    ctx.fillStyle = screenGrad;
+    ctx.beginPath();
+    ctx.roundRect(scrX, scrY, scrW, scrH, 3);
+    ctx.fill();
+
+    // Scenic skyline / mountain silhouette on TV
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(scrX, scrY + scrH);
+    ctx.lineTo(scrX, scrY + scrH * 0.72);
+    ctx.lineTo(scrX + scrW * 0.18, scrY + scrH * 0.52);
+    ctx.lineTo(scrX + scrW * 0.35, scrY + scrH * 0.76);
+    ctx.lineTo(scrX + scrW * 0.52, scrY + scrH * 0.46);
+    ctx.lineTo(scrX + scrW * 0.68, scrY + scrH * 0.68);
+    ctx.lineTo(scrX + scrW * 0.84, scrY + scrH * 0.42);
+    ctx.lineTo(scrX + scrW, scrY + scrH * 0.64);
+    ctx.lineTo(scrX + scrW, scrY + scrH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Modern glowing status HUD / media playback bar on screen
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+    ctx.beginPath();
+    ctx.roundRect(scrX + 16, scrY + scrH - 18, scrW - 32, 10, 5);
+    ctx.fill();
+    // Progress bar fill
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.roundRect(scrX + 18, scrY + scrH - 16, (scrW - 36) * 0.65, 6, 3);
+    ctx.fill();
+
+    // Subtle screen glass reflection sheen
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(scrX, scrY, scrW, scrH, 3);
+    ctx.clip();
+    const sheenGrad = ctx.createLinearGradient(scrX, scrY, scrX + scrW * 0.6, scrY + scrH);
+    sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+    sheenGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.04)');
+    sheenGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sheenGrad;
+    ctx.fillRect(scrX, scrY, scrW, scrH);
+    ctx.restore();
+
+    // TV power status subtle micro-LED at bottom bezel center
+    ctx.fillStyle = ledColor;
+    ctx.beginPath();
+    ctx.arc(tvLeft + tvWidth / 2, tvTop + tvHeight - 2, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawRetroTv(ctx, box, colors) {
+    drawModernTv(ctx, box, colors);
   }
 
   function drawBookshelf(ctx, box, colors) {
@@ -618,6 +736,7 @@
     couch: drawCouch,
     armchair: drawArmchair,
     'coffee-table': drawCoffeeTable,
+    'modern-tv': drawModernTv,
     'retro-tv': drawRetroTv,
     bookshelf: drawBookshelf,
     'floor-lamp': drawFloorLamp,
@@ -654,7 +773,7 @@
       this.player = {
         x: spawnX,
         y: spawnY,
-        radius: 18,
+        radius: 12,
         speed: 185,
         facing: 'down',
         name: 'Learner Kim',
@@ -668,7 +787,7 @@
       this.bot = {
         x: spawnX - 28,
         y: spawnY + 6,
-        radius: 14,
+        radius: 12,
         speed: 170,
         targetX: spawnX - 28,
         targetY: spawnY + 6,
@@ -738,14 +857,20 @@
         }
       }
 
-      // 5. Doorways: Front Door (32, 38) and Back Door (32, 22)
-      this.grid[cfg.frontDoor.y][cfg.frontDoor.x] = 'home-door-front';
-      this.grid[cfg.backDoor.y][cfg.backDoor.x] = 'home-door-back';
+      // 5. Doorways: Front Door (x: 31..32, y: 38) and Back Door (x: 31..32, y: 22)
+      const fdW = cfg.frontDoor.width || 1;
+      for (let dx = 0; dx < fdW; dx++) {
+        this.grid[cfg.frontDoor.y][cfg.frontDoor.x + dx] = 'home-door-front';
+      }
+      const bdW = cfg.backDoor.width || 1;
+      for (let dx = 0; dx < bdW; dx++) {
+        this.grid[cfg.backDoor.y][cfg.backDoor.x + dx] = 'home-door-back';
+      }
 
       // 6. Yard stone / dirt paths leading out from doors
       // South path from front door into front yard
       for (let y = cfg.frontDoor.y + 1; y <= Math.min(WORLD_SIZE - 1, cfg.frontDoor.y + 10); y++) {
-        for (let x = cfg.frontDoor.x - 1; x <= cfg.frontDoor.x + 1; x++) {
+        for (let x = cfg.frontDoor.x - 1; x <= cfg.frontDoor.x + fdW; x++) {
           if (this.grid[y] && this.grid[y][x] === 'grass') {
             this.grid[y][x] = 'dirt';
           }
@@ -753,7 +878,7 @@
       }
       // North path from back door into backyard
       for (let y = Math.max(0, cfg.backDoor.y - 10); y < cfg.backDoor.y; y++) {
-        for (let x = cfg.backDoor.x - 1; x <= cfg.backDoor.x + 1; x++) {
+        for (let x = cfg.backDoor.x - 1; x <= cfg.backDoor.x + bdW; x++) {
           if (this.grid[y] && this.grid[y][x] === 'grass') {
             this.grid[y][x] = 'dirt';
           }
@@ -765,8 +890,8 @@
       for (let y = hy; y <= maxY; y++) {
         for (let x = hx; x <= maxX; x++) {
           const isPerimeter = x === hx || x === maxX || y === hy || y === maxY;
-          const isFrontDoor = x === cfg.frontDoor.x && y === cfg.frontDoor.y;
-          const isBackDoor = x === cfg.backDoor.x && y === cfg.backDoor.y;
+          const isFrontDoor = y === cfg.frontDoor.y && x >= cfg.frontDoor.x && x < cfg.frontDoor.x + fdW;
+          const isBackDoor = y === cfg.backDoor.y && x >= cfg.backDoor.x && x < cfg.backDoor.x + bdW;
           if (isPerimeter && !isFrontDoor && !isBackDoor) {
             this.solidBoxes.push({
               left: x * TILE,
@@ -940,22 +1065,28 @@
       const stepY = vy * dt;
       const r = entity.radius;
 
-      // Move X
+      // Move X with smooth sliding clamp
       let nextX = entity.x + stepX;
       for (const box of this.solidBoxes) {
         if (this.checkCircleBoxCollision(nextX, entity.y, r, box)) {
-          if (stepX > 0) nextX = box.left - r - 0.1;
-          else if (stepX < 0) nextX = box.right + r + 0.1;
+          if (stepX > 0) {
+            nextX = Math.min(nextX, box.left - r - 0.05);
+          } else if (stepX < 0) {
+            nextX = Math.max(nextX, box.right + r + 0.05);
+          }
         }
       }
       entity.x = nextX;
 
-      // Move Y
+      // Move Y with smooth sliding clamp
       let nextY = entity.y + stepY;
       for (const box of this.solidBoxes) {
         if (this.checkCircleBoxCollision(entity.x, nextY, r, box)) {
-          if (stepY > 0) nextY = box.top - r - 0.1;
-          else if (stepY < 0) nextY = box.bottom + r + 0.1;
+          if (stepY > 0) {
+            nextY = Math.min(nextY, box.top - r - 0.05);
+          } else if (stepY < 0) {
+            nextY = Math.max(nextY, box.bottom + r + 0.05);
+          }
         }
       }
       entity.y = nextY;
@@ -1133,43 +1264,93 @@
 
     renderBot(ctx) {
       const b = this.bot;
-      const hover = Math.sin(this.gameTime * 4) * 3;
-      const roll = b.moving ? Math.sin(b.rollT) * 0.1 : 0;
+      const t = this.gameTime;
+      const botHeight = Math.round(TILE * 1.05); // ~50px (matching pp-livive-net COMPANION_HEIGHT)
+      const botWidth = botHeight; // ~50px
+      const characterHeight = botHeight;
 
-      // Bot shadow
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
-      ctx.beginPath();
-      ctx.ellipse(b.x, b.y + b.radius, b.radius * 0.9, b.radius * 0.35, 0, 0, Math.PI * 2);
-      ctx.fill();
+      let translateY = 0;
+      let translateX = 0;
+      let rotate = 0;
+      let scaleX = 1;
+      let scaleY = 1;
+      let shadowScale = 1;
 
-      const img = b.frameImages.default || b.img;
-      const sz = 46;
+      if (b.moving) {
+        // Wheeled rolling tilt when moving: forward roll curve, slight squash/stretch, motor hum
+        const rollCurve = Math.sin(b.rollT * Math.PI);
+        const motorHum = Math.sin(t * 45) * 0.008;
+        // Negative angle leans forward into movement direction
+        const forwardLean = -(4.8 * Math.PI / 180) * rollCurve;
+
+        translateY = 0; // Stays firmly wheeled on the ground!
+        rotate = forwardLean;
+        scaleX = 1 + 0.03 * rollCurve;
+        scaleY = 1 - 0.025 * rollCurve + motorHum;
+        shadowScale = 1.08;
+      } else {
+        // Idle behavior matching pp-livive-net / v2: wheels planted on the ground (no airborne float/hover!)
+        translateY = 0;
+        const stretchCycle = (t % 4.5) / 4.5;
+        if (stretchCycle >= 0.68 && stretchCycle <= 0.88) {
+          const progress = Math.sin(((stretchCycle - 0.68) / 0.20) * Math.PI);
+          translateY = -0.025 * characterHeight * progress; // subtle mechanical stretch
+          scaleY = 1 + 0.03 * progress;
+          scaleX = 1 - 0.015 * progress;
+        }
+      }
 
       ctx.save();
-      ctx.translate(b.x, b.y - b.radius + hover);
-      ctx.rotate(roll);
+      ctx.translate(Math.round(b.x), Math.round(b.y));
 
-      if (img && img.complete && img.naturalWidth !== 0) {
-        ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
-      } else {
-        // Fallback bot rendering
-        ctx.fillStyle = '#06b6d4';
-        ctx.beginPath();
-        ctx.arc(0, 0, b.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      // Dynamic cast shadow under bot grounded wheels
+      ctx.save();
+      ctx.globalAlpha = 0.28 * shadowScale;
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.ellipse(0, 10, 16 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
 
+      // Bot sprite
+      const img = (b.frameImages && b.frameImages.default) ? b.frameImages.default : b.img;
+
+      if (img && img.complete && img.naturalWidth !== 0) {
+        ctx.save();
+        ctx.translate(translateX, translateY);
+        if (rotate !== 0) ctx.rotate(b.facing === 'right' ? rotate : -rotate);
+        if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
+        if (b.facing === 'right') {
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(img, -botWidth / 2, -botHeight + 10, botWidth, botHeight);
+        ctx.restore();
+      } else {
+        // Fallback procedural grounded bot
+        ctx.save();
+        ctx.translate(translateX, translateY);
+        ctx.fillStyle = '#06b6d4';
+        ctx.beginPath();
+        ctx.arc(0, -botHeight / 2 + 5, b.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#0891b2';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+
       // Bot label badge
-      ctx.fillStyle = 'rgba(6, 182, 212, 0.8)';
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.85)';
       ctx.beginPath();
-      ctx.roundRect(b.x - 34, b.y - b.radius - 30 + hover, 68, 16, 8);
+      ctx.roundRect(-34, -botHeight - 8 + translateY, 68, 16, 8);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(b.name, b.x, b.y - b.radius - 22 + hover);
+      ctx.fillText(b.name, 0, -botHeight + translateY);
+
+      ctx.restore();
     }
 
     render() {
