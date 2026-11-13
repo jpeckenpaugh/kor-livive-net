@@ -34,7 +34,11 @@
       </div>
 
       <div class="hud-actions">
-        <button id="btn-lesson1" class="hud-btn highlight">🎓 Lesson 1</button>
+        <select id="hud-lesson-select" class="hud-btn" aria-label="Select Lesson">
+          <option value="lesson1">Lesson 1: Greetings</option>
+          <option value="colors">Lesson 2: Colors (색깔)</option>
+        </select>
+        <button id="btn-lesson1" class="hud-btn highlight">🎓 Start Lesson</button>
         <button id="btn-customize" class="hud-btn">⚙️ Customize</button>
       </div>
     </div>
@@ -71,6 +75,14 @@
               <div class="input-group">
                 <label for="input-player-name">Player Name</label>
                 <input type="text" id="input-player-name" maxlength="20" placeholder="e.g. Minjun Kim">
+              </div>
+
+              <div class="input-group">
+                <label for="select-lesson">Lesson</label>
+                <select id="select-lesson" class="custom-select">
+                  <option value="lesson1">Lesson 1: Home Tutoring &amp; Greetings</option>
+                  <option value="colors">Lesson 2: Colors (색깔)</option>
+                </select>
               </div>
 
               <!-- Detailed customization selectors -->

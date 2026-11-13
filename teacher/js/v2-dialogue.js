@@ -713,12 +713,134 @@
     }
   ];
 
+  const COLORS_LESSON_BEATS = [
+    {
+      id: 1,
+      phase: 1,
+      phaseName: 'Colors: Basics',
+      title: 'What Color Do You Like?',
+      concept: 'Asking About Colors (무슨 색을 좋아해요?)',
+      teacherKo: '{playerName}님, 오늘은 색깔을 배워볼까요? 무슨 색을 좋아해요?',
+      teacherEn: '{playerName}, shall we learn colors today? What color do you like?',
+      promptEn: 'Tell Teacher Park what color you like:',
+      options: [
+        { en: 'I like blue!', ko: '파란색을 좋아해요!', feedback: 'Great! 파란색 (pa-ran-saek) means blue.' },
+        { en: 'I like red!', ko: '빨간색을 좋아해요!', feedback: 'Nice! 빨간색 (ppal-gan-saek) means red.' }
+      ],
+      culturalNote: '색 (saek) or 색깔 (saek-kkal) means color. Attach -을/를 좋아해요 to say "I like...".'
+    },
+    {
+      id: 2,
+      phase: 1,
+      phaseName: 'Colors: Basics',
+      title: 'Red (빨간색)',
+      concept: 'Describing Red Objects',
+      teacherKo: '사과는 빨간색이에요. 빨간색 따라 해 보세요!',
+      teacherEn: 'The apple is red. Try saying red!',
+      promptEn: 'Repeat and respond:',
+      options: [
+        { en: 'Red! The apple is red.', ko: '빨간색! 사과는 빨간색이에요.', feedback: 'Spot on! 사과 (sa-gwa) is apple.' },
+        { en: 'Red is pretty.', ko: '빨간색이 예뻐요.', feedback: 'Lovely sentence! 예뻐요 means pretty.' }
+      ],
+      culturalNote: '빨간색 comes from 빨갛다 (to be red). You will see it on traffic lights and apples!'
+    },
+    {
+      id: 3,
+      phase: 1,
+      phaseName: 'Colors: Basics',
+      title: 'Blue (파란색)',
+      concept: 'Describing Blue Objects',
+      teacherKo: '오늘 하늘이 정말 맑아요. 하늘은 파란색이에요.',
+      teacherEn: 'The sky is so clear today. The sky is blue.',
+      promptEn: 'Respond about the sky:',
+      options: [
+        { en: 'The sky is blue!', ko: '하늘은 파란색이에요!', feedback: 'Excellent! 하늘 (ha-neul) means sky.' },
+        { en: 'I love the blue sky.', ko: '파란 하늘이 좋아요.', feedback: 'Natural! 파란 is the adjective form of blue.' }
+      ],
+      culturalNote: '파란색 (blue) can also describe green traffic lights in traditional Korean expressions!'
+    },
+    {
+      id: 4,
+      phase: 1,
+      phaseName: 'Colors: Basics',
+      title: 'Yellow (노란색)',
+      concept: 'Describing Yellow Objects',
+      teacherKo: '바나나와 레몬은 무슨 색이에요?',
+      teacherEn: 'What color are bananas and lemons?',
+      promptEn: 'Answer Teacher Park:',
+      options: [
+        { en: 'They are yellow!', ko: '노란색이에요!', feedback: 'Correct! 노란색 (no-ran-saek) is yellow.' },
+        { en: 'Bananas are yellow.', ko: '바나나는 노란색이에요.', feedback: 'Full sentence! Great job.' }
+      ],
+      culturalNote: '노란색 (no-ran-saek) is yellow. Bright and easy to remember!'
+    },
+    {
+      id: 5,
+      phase: 2,
+      phaseName: 'Colors: Nature & Contrast',
+      title: 'Green (초록색)',
+      concept: 'Describing Green Objects',
+      teacherKo: '공원 나무의 나뭇잎은 초록색이에요.',
+      teacherEn: 'The leaves on the park trees are green.',
+      promptEn: 'Practice green:',
+      options: [
+        { en: 'Green! Leaves are green.', ko: '초록색! 나뭇잎은 초록색이에요.', feedback: 'Great! 초록색 (cho-rok-saek) is green.' },
+        { en: 'Green is refreshing.', ko: '초록색이 시원해요.', feedback: 'Nice! 시원해요 means refreshing/cool.' }
+      ],
+      culturalNote: '초록색 (cho-rok-saek) is the standard word for green.'
+    },
+    {
+      id: 6,
+      phase: 2,
+      phaseName: 'Colors: Nature & Contrast',
+      title: 'Black & White (검은색 / 흰색)',
+      concept: 'Comparing Black and White',
+      teacherKo: '눈은 흰색이고, 밤하늘은 검은색이에요.',
+      teacherEn: 'Snow is white, and the night sky is black.',
+      promptEn: 'Respond using white or black:',
+      options: [
+        { en: 'Snow is white!', ko: '눈은 흰색이에요!', feedback: 'Yes! 흰색 (huin-saek) is white.' },
+        { en: 'The night sky is black.', ko: '밤하늘은 검은색이에요.', feedback: 'Yes! 검은색 (geom-eun-saek) is black.' }
+      ],
+      culturalNote: '흰색 (white) and 검은색 (black) are everyday essentials for clothes and descriptions.'
+    },
+    {
+      id: 7,
+      phase: 2,
+      phaseName: 'Colors: Nature & Contrast',
+      title: 'Lesson Complete!',
+      concept: 'Reviewing Colors',
+      teacherKo: '{playerName}님, 오늘 색깔 공부를 정말 잘했어요! 다음 수업에서 또 만나요.',
+      teacherEn: '{playerName}, you did a wonderful job studying colors today! See you next lesson.',
+      promptEn: 'Say goodbye to Teacher Park:',
+      options: [
+        { en: 'Thank you! It was fun.', ko: '감사합니다! 재미있었어요.', feedback: 'Wonderful! You completed the Colors lesson!' },
+        { en: 'See you next time!', ko: '다음에 또 만나요!', feedback: 'Great job! 5 Scholar Stars earned!' }
+      ],
+      culturalNote: '재미있었어요 (jae-mi-iss-eoss-eo-yo) means "It was fun!"'
+    }
+  ];
+
+  const LESSONS = {
+    lesson1: {
+      id: 'lesson1',
+      title: 'Lesson 1: Home Tutoring & Greetings',
+      beats: LESSON_1_BEATS
+    },
+    colors: {
+      id: 'colors',
+      title: 'Lesson 2: Colors (색깔)',
+      beats: COLORS_LESSON_BEATS
+    }
+  };
+
   // --- Dialogue Engine Coordinator ---
   class V2DialogueManager {
     constructor(engine, app) {
       this.engine = engine;
       this.app = app;
       this.currentBeatIndex = 0;
+      this.currentLessonId = 'lesson1';
       this.isPlaying = false;
       this.subStep = 'idle'; // 'idle' | 'teacher-ko' | 'tbot-en' | 'student-choice' | 'student-bot-ko'
       this.autoAdvance = false;
@@ -862,15 +984,26 @@
       }, 1800);
     }
 
+    setLesson(lessonId) {
+      if (LESSONS[lessonId]) {
+        this.currentLessonId = lessonId;
+      }
+    }
+
+    getActiveBeats() {
+      return (LESSONS[this.currentLessonId] && LESSONS[this.currentLessonId].beats) || LESSON_1_BEATS;
+    }
+
     renderBeat(index) {
+      const beats = this.getActiveBeats();
       if (index < 0) index = 0;
-      if (index >= LESSON_1_BEATS.length) {
+      if (index >= beats.length) {
         this.finishScenario();
         return;
       }
 
       this.currentBeatIndex = index;
-      const beat = LESSON_1_BEATS[index];
+      const beat = beats[index];
       const playerName = (this.app && this.app.state && this.app.state.playerName) || 'Learner';
       const botName = (this.app && this.app.state && this.app.state.botName) || 'SparkyBot';
 
@@ -879,10 +1012,10 @@
       const pillPhase = document.getElementById('dialogue-phase-pill');
       const progressFill = document.getElementById('dialogue-progress-fill');
 
-      if (pillBeat) pillBeat.textContent = `Beat ${beat.id} of 20: ${beat.title}`;
+      if (pillBeat) pillBeat.textContent = `Beat ${beat.id} of ${beats.length}: ${beat.title}`;
       if (pillPhase) pillPhase.textContent = beat.phaseName;
       if (progressFill) {
-        const percent = ((beat.id) / 20) * 100;
+        const percent = ((beat.id) / beats.length) * 100;
         progressFill.style.width = `${percent}%`;
       }
 
@@ -1110,8 +1243,9 @@
     }
 
     goToBeat(index) {
+      const beats = this.getActiveBeats();
       if (index < 0) return;
-      if (index >= LESSON_1_BEATS.length) {
+      if (index >= beats.length) {
         this.finishScenario();
         return;
       }
@@ -1123,7 +1257,7 @@
     }
 
     replayCurrentSpeakerAudio() {
-      const beat = LESSON_1_BEATS[this.currentBeatIndex];
+      const beat = this.getActiveBeats()[this.currentBeatIndex];
       if (!beat) return;
       const playerName = (this.app && this.app.state && this.app.state.playerName) || 'Learner';
       const botName = (this.app && this.app.state && this.app.state.botName) || 'SparkyBot';

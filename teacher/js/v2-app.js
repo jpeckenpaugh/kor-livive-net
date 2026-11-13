@@ -271,6 +271,23 @@
 
       // Selection inputs & previews
       this.inputPlayerName = document.getElementById('input-player-name');
+      this.selectLesson = document.getElementById('select-lesson');
+      this.hudLessonSelect = document.getElementById('hud-lesson-select');
+      this.state.lessonId = this.state.lessonId || 'lesson1';
+
+      const syncLesson = (lessonId) => {
+        this.state.lessonId = lessonId;
+        if (this.selectLesson) this.selectLesson.value = lessonId;
+        if (this.hudLessonSelect) this.hudLessonSelect.value = lessonId;
+        if (this.dialogue) this.dialogue.setLesson(lessonId);
+      };
+
+      if (this.selectLesson) {
+        this.selectLesson.addEventListener('change', (e) => syncLesson(e.target.value));
+      }
+      if (this.hudLessonSelect) {
+        this.hudLessonSelect.addEventListener('change', (e) => syncLesson(e.target.value));
+      }
       this.inputBotName = document.getElementById('input-bot-name');
       this.previewPlayer = document.getElementById('preview-player-avatar');
       this.previewBot = document.getElementById('preview-bot-avatar');
@@ -432,6 +449,7 @@
             this.dialogue = new window.V2DialogueManager(this.engine, this);
           }
           if (this.dialogue) {
+            this.dialogue.setLesson(this.state.lessonId || 'lesson1');
             this.dialogue.startScenario();
           }
         });
