@@ -438,7 +438,13 @@
       }
 
       // Keyboard Controls
+      const isTypingTarget = (target) => {
+        const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+        return tag === 'input' || tag === 'textarea' || tag === 'select' || !!(target && target.isContentEditable);
+      };
+
       window.addEventListener('keydown', (e) => {
+        if (isTypingTarget(e.target)) return;
         const key = e.key.toLowerCase();
         if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
           this.keysDown.add(key);
@@ -448,6 +454,7 @@
       });
 
       window.addEventListener('keyup', (e) => {
+        if (isTypingTarget(e.target)) return;
         const key = e.key.toLowerCase();
         if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
           this.keysDown.delete(key);
