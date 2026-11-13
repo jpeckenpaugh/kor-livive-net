@@ -88,11 +88,47 @@
   ];
 
   // --- Speech Synthesis ---
+  let preferredVoice = null;
+
+  function pickKoreanVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    const koVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith('ko'));
+    if (!koVoices.length) return null;
+
+    const priorities = [
+      (v) => v.name.includes('Google'),
+      (v) => v.name.includes('Sora'),
+      (v) => v.name.includes('Yuna') && v.name.includes('Enhanced'),
+      (v) => v.name.includes('Yuna'),
+      (v) => !v.localService
+    ];
+
+    for (const match of priorities) {
+      const found = koVoices.find(match);
+      if (found) return found;
+    }
+    return koVoices[0];
+  }
+
+  if ('speechSynthesis' in window) {
+    preferredVoice = pickKoreanVoice();
+    window.speechSynthesis.addEventListener('voiceschanged', () => {
+      preferredVoice = pickKoreanVoice();
+    });
+  }
+
   function speakKorean(text, rate = 0.85) {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'ko-KR';
+    if (!preferredVoice) {
+      preferredVoice = pickKoreanVoice();
+    }
+    if (preferredVoice) {
+      utter.voice = preferredVoice;
+    }
     utter.rate = rate;
     window.speechSynthesis.speak(utter);
   }
