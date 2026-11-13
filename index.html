@@ -2,361 +2,210 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Korean Language Buddy 🇰🇷</title>
-  <meta name="description" content="Calm, situational Korean practice with interactive dialogue scenarios, polite etiquette feedback, and audio pronunciation.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korean Language Buddy</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --shadow: 0 18px 40px -12px rgba(15, 23, 42, 0.14);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      color: var(--text-dark);
+    }
+
+    .hub-container {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .hub-header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hub-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.12rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.5;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      width: 100%;
+    }
+
+    .hub-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .hub-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.2);
+    }
+
+    .hub-card.lessons:hover {
+      border-color: var(--primary);
+    }
+
+    .hub-card.teacher:hover {
+      border-color: var(--accent);
+    }
+
+    .card-icon {
+      font-size: 3rem;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .card-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .card-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #ffffff;
+      transition: background 0.2s ease;
+    }
+
+    .lessons .card-cta {
+      background: var(--primary);
+    }
+
+    .lessons:hover .card-cta {
+      background: var(--primary-hover);
+    }
+
+    .teacher .card-cta {
+      background: var(--accent);
+    }
+
+    .teacher:hover .card-cta {
+      background: var(--accent-hover);
+    }
+
+    @media (max-width: 680px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hub-card {
+        padding: 26px 22px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <main class="hub-container">
+    <header class="hub-header">
+      <div class="hub-badge">🇰🇷 한국어 • Korean Language Buddy</div>
+      <h1>Choose Your Learning Mode</h1>
+      <p class="subtitle">Practice everyday Korean through interactive lessons or jump into a live home-tutoring roleplay.</p>
+    </header>
 
-  <!-- TOP APP HEADER -->
-  <header class="app-header">
-    <div class="header-left">
-      <!-- Universal Lessons Drawer Button -->
-      <button class="nav-drawer-btn" id="drawer-toggle-btn" aria-label="Open lessons roadmap">
-        <span class="drawer-icon">☰</span>
-        <span class="drawer-label" id="current-lesson-pill-label">1. School Greeting</span>
-      </button>
-    </div>
+    <section class="cards-grid">
+      <a class="hub-card lessons" href="/lessons/">
+        <div class="card-icon">📚</div>
+        <div class="card-title">Lessons &amp; Practice</div>
+        <p class="card-desc">
+          Explore 10 guided Korean lessons with interactive scenarios, flashcards, audio pronunciation, and quiz challenges.
+        </p>
+        <span class="card-cta">Open Lessons →</span>
+      </a>
 
-    <div class="header-center">
-      <div class="brand-badge">
-        <span class="brand-flag">🇰🇷</span>
-        <span class="brand-title">Korean Buddy</span>
-      </div>
-    </div>
-
-    <div class="header-right">
-      <!-- Profile Status Pill -->
-      <button class="profile-pill" id="profile-pill-btn" title="Click to switch or view profile">
-        <div class="profile-avatar-badge" id="header-avatar">🐯</div>
-        <div class="profile-info">
-          <span class="profile-name" id="header-name">Learner</span>
-          <span class="profile-stars" id="header-stars">⭐ 0</span>
-        </div>
-      </button>
-    </div>
-  </header>
-
-  <!-- BACKDROP FOR LESSONS DRAWER -->
-  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-
-  <!-- SLIDE-OUT CURRICULUM DRAWER (UNIVERSAL ACROSS DESKTOP & MOBILE) -->
-  <aside class="sidebar-drawer" id="sidebar-nav" aria-label="Lessons Drawer">
-    <div class="drawer-header">
-      <div class="drawer-title">
-        <span>📚 Curriculum</span>
-      </div>
-      <div class="drawer-header-actions">
-        <span class="curriculum-progress" id="sidebar-curriculum-progress">0 / 10 Done</span>
-        <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close roadmap drawer">✕</button>
-      </div>
-    </div>
-
-    <nav class="lessons-list" id="sidebar-lessons-list" aria-label="Korean lessons list">
-      <!-- Rendered dynamically by app.js -->
-    </nav>
-  </aside>
-
-  <!-- MAIN APP CONTAINER -->
-  <div class="app-layout">
-    <main class="workspace">
-      
-      <!-- SUBTLE SECONDARY STUDY MODE SWITCHER (DOCKED PILL BAR) -->
-      <nav class="mode-tabs" role="tablist" aria-label="Study modes">
-        <button class="tab-btn active" data-tab="scenario" role="tab" aria-selected="true" id="tab-btn-scenario">
-          <span>💬</span> Scenario
-        </button>
-        <button class="tab-btn" data-tab="cards" role="tab" aria-selected="false">
-          <span>🃏</span> Flashcards
-        </button>
-        <button class="tab-btn" data-tab="quiz" role="tab" aria-selected="false">
-          <span>🎮</span> Quiz
-        </button>
-        <button class="tab-btn" data-tab="all" role="tab" aria-selected="false">
-          <span>📖</span> Word Bank
-        </button>
-      </nav>
-
-      <!-- CALM LESSON HERO BAR -->
-      <section class="lesson-hero-bar">
-        <div class="lesson-hero-info">
-          <span class="lesson-goal-tag" id="lesson-hero-goal">Greet someone politely at school</span>
-          <h2 class="lesson-hero-title" id="lesson-hero-title">👋 Essential Greetings</h2>
-        </div>
-        <div class="lesson-hero-meta">
-          <span class="lesson-stars-badge" id="lesson-banner-stars" title="Stars earned in this lesson">⭐ 0/3</span>
-        </div>
-      </section>
-
-      <!-- 0. SCENARIO DIALOGUE VIEW (PRIMARY / HERO) -->
-      <section id="scenario-view" class="view-section active" role="tabpanel">
-        <div class="scenario-stage" id="scenario-stage">
-          
-          <!-- Scene Ambience Header: Minimal Subtle Stage Indicator -->
-          <div class="scene-ambience-bar">
-            <span class="scene-location" id="scene-location-text">🏫 Classroom Door</span>
-          </div>
-
-          <!-- Active Dialogue Scene Arena -->
-          <div class="dialogue-arena" id="dialogue-arena">
-            <!-- NPC Speaker Row -->
-            <div class="npc-speaker-row" id="npc-speaker-row">
-              <div class="speaker-avatar-bubble" id="npc-avatar">👩‍🏫</div>
-              <div class="speech-bubble-container">
-                <div class="speaker-name" id="npc-name">Teacher Park (박 선생님)</div>
-                <div class="speech-bubble" id="npc-speech-bubble" role="button" tabindex="0" title="Tap bubble to reveal or hide English translation & phonetics">
-                  <div class="bubble-kr" id="npc-speech-kr">좋은 아침이에요! 안녕하세요!</div>
-                  <div class="bubble-disclosure-wrap" id="bubble-disclosure-wrap">
-                    <div class="bubble-phonetic" id="npc-speech-phonetic">Jo-eun a-chim-i-e-yo! An-nyeong-ha-se-yo!</div>
-                    <div class="bubble-en" id="npc-speech-en">Good morning! Hello!</div>
-                  </div>
-                </div>
-                <div class="bubble-action-bar">
-                  <button class="bubble-audio-btn" id="scenario-audio-btn" aria-label="Listen to teacher's Korean phrase" title="Listen">
-                    <span>🔊</span> Listen
-                  </button>
-                  <button class="bubble-translate-toggle-btn" id="scenario-translate-btn" type="button" aria-expanded="false" title="Show/hide English translation">
-                    <span class="translate-icon">👁️</span> <span class="translate-btn-label">Translate</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Learner Challenge Area -->
-            <div class="learner-challenge-zone" id="learner-challenge-zone">
-              <div class="learner-challenge-prompt" id="scenario-prompt-text">
-                How do you greet your teacher respectfully?
-              </div>
-
-              <!-- Interactive Dialogue Options -->
-              <div class="scenario-options-grid" id="scenario-options-grid">
-                <!-- Dynamically generated buttons -->
-              </div>
-
-              <!-- Contextual Etiquette Feedback Card -->
-              <div class="etiquette-feedback-card" id="etiquette-feedback-card" style="display: none;">
-                <div class="etiquette-header">
-                  <span class="etiquette-title" id="etiquette-title">Spot on! 🌟</span>
-                </div>
-                <p class="etiquette-explanation" id="etiquette-explanation"></p>
-                <div class="etiquette-nuance" id="etiquette-nuance"></div>
-                <button type="button" class="btn-primary etiquette-continue-btn" id="etiquette-continue-btn">
-                  Continue ▶
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Scenario Completion Screen (Hidden by default) -->
-          <div class="scenario-completion-container" id="scenario-completion-card" style="display: none;">
-            <div class="celebration-badge" id="scenario-badge">🏫</div>
-            <h3 class="scenario-result-title" id="scenario-completion-title">Scenario Mastered!</h3>
-            <p class="scenario-result-subtitle" id="scenario-completion-summary">You politely greeted your teacher and confirmed ready for class!</p>
-            
-            <div class="scenario-reward-pill" id="scenario-reward-pill">
-              ⭐ 1 Star Earned in this Lesson!
-            </div>
-
-            <div class="scenario-result-actions">
-              <button type="button" class="btn-primary scenario-action-btn" id="scenario-try-quiz-btn">
-                <span>Test in Quiz Challenge</span> 🎮
-              </button>
-              <button type="button" class="btn-secondary scenario-action-btn" id="scenario-replay-btn">
-                <span>Replay Dialogue</span> 🔄
-              </button>
-              <button type="button" class="btn-ghost scenario-action-btn" id="scenario-study-cards-btn">
-                <span>Practice Flashcards</span> 🃏
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- 1. FLASHCARDS VIEW -->
-      <section id="cards-view" class="view-section" role="tabpanel">
-        <div class="card-scene">
-          <div class="card" id="flashcard" role="button" tabindex="0" aria-label="Tap card to flip">
-            <!-- Front Face: Korean & Pronunciation -->
-            <div class="card-face card-front">
-              <span class="card-emoji" id="card-front-emoji">👋</span>
-              <div class="card-korean" id="card-korean-text">안녕하세요</div>
-              <div class="card-phonetic" id="card-phonetic-text">An-nyeong-ha-se-yo</div>
-              <div class="card-hint">👆 Tap card to see English translation</div>
-            </div>
-            <!-- Back Face: English Meaning & Tip -->
-            <div class="card-face card-back">
-              <span class="card-emoji" id="card-back-emoji">👋</span>
-              <span class="card-label">English Meaning</span>
-              <div class="card-english-row">
-                <div class="card-english" id="card-english-text">Hello / Hi</div>
-                <button type="button" class="card-audio-en-btn" id="card-audio-en-btn" aria-label="Listen to English pronunciation" title="Listen in English">
-                  <span>🔊</span>
-                </button>
-              </div>
-              <div class="card-tip" id="card-fact-text">💡 The most common polite greeting in Korea. Give a gentle nod or bow as you say it!</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="card-controls">
-          <button class="ctrl-btn ctrl-nav-btn" id="card-prev-btn" aria-label="Previous word" title="Previous word (Left arrow)">◀</button>
-          <button class="ctrl-btn ctrl-audio-btn" id="card-audio-btn" aria-label="Listen to Korean pronunciation" title="Listen in Korean">
-            <span>🔊</span> Korean
-          </button>
-          <button class="ctrl-btn ctrl-audio-en-btn" id="card-ctrl-audio-en-btn" aria-label="Listen to English pronunciation" title="Listen in English">
-            <span>🗣️</span> English
-          </button>
-          <button class="ctrl-btn ctrl-autoplay-btn" id="card-autoplay-btn" aria-label="Start Auto-Play" title="Auto-Play card loop">
-            <span class="autoplay-icon">▶</span> <span class="autoplay-label">Auto</span>
-          </button>
-          <button class="ctrl-btn ctrl-nav-btn" id="card-next-btn" aria-label="Next word" title="Next word (Right arrow)">▶</button>
-        </div>
-
-        <!-- Progress bar in lesson -->
-        <div class="progress-track">
-          <div class="progress-fill" id="card-progress-fill"></div>
-        </div>
-        <div class="card-counter" id="card-counter-label">Word 1 of 6</div>
-      </section>
-
-      <!-- 2. QUIZ CHALLENGE VIEW -->
-      <section id="quiz-view" class="view-section" role="tabpanel">
-        <div class="quiz-wrapper">
-          <!-- Active Question Container -->
-          <div id="quiz-question-container">
-            <div class="quiz-score-row">
-              <span class="quiz-round-indicator" id="quiz-round-indicator">Question 1 of 5</span>
-              <span class="quiz-stars-count" id="quiz-stars-display">⭐ Lesson Stars: 0/3</span>
-            </div>
-
-            <div class="progress-track quiz-track">
-              <div class="progress-fill quiz-progress-fill" id="quiz-progress-fill"></div>
-            </div>
-
-            <div class="quiz-question-prompt">What does this Korean word mean?</div>
-            
-            <div class="quiz-hangul-card">
-              <span id="quiz-kr-text">안녕하세요</span>
-              <button class="quiz-audio-mini" id="quiz-sound-mini" aria-label="Listen to quiz word" title="Listen">🔊</button>
-            </div>
-
-            <div class="quiz-options-grid" id="quiz-options-container">
-              <!-- Dynamically populated 4 options -->
-            </div>
-
-            <div class="quiz-feedback" id="quiz-feedback-msg">Pick the correct English translation!</div>
-          </div>
-
-          <!-- Quiz Completion / Results Container (Hidden by default) -->
-          <div id="quiz-results-container" class="quiz-results-container" style="display: none;">
-            <div class="celebration-badge" id="quiz-result-badge">🏆</div>
-            <h3 class="quiz-result-title" id="quiz-result-title">Quiz Completed!</h3>
-            <p class="quiz-result-subtitle" id="quiz-result-subtitle">Awesome work practicing your Korean vocabulary!</p>
-            
-            <div class="quiz-result-stats">
-              <div class="result-stat-box">
-                <span class="stat-label">Round Score</span>
-                <span class="stat-val" id="quiz-result-score">5 / 5</span>
-              </div>
-              <div class="result-stat-box highlight">
-                <span class="stat-label">Stars Earned</span>
-                <span class="stat-val star-val" id="quiz-result-stars">⭐⭐</span>
-              </div>
-              <div class="result-stat-box">
-                <span class="stat-label">Total Stars</span>
-                <span class="stat-val" id="quiz-result-total-stars">⭐ 3</span>
-              </div>
-            </div>
-
-            <div class="quiz-result-actions">
-              <button type="button" class="btn-primary quiz-action-btn" id="quiz-next-lesson-btn">
-                <span>Next Lesson</span> ▶
-              </button>
-              <button type="button" class="btn-secondary quiz-action-btn" id="quiz-retake-btn">
-                <span>Re-take Quiz</span> 🔄
-              </button>
-              <button type="button" class="btn-ghost quiz-action-btn" id="quiz-review-cards-btn">
-                <span>Review Flashcards</span> 🃏
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3. WORD BANK / ALL WORDS VIEW -->
-      <section id="all-view" class="view-section" role="tabpanel">
-        <div class="vocab-grid" id="vocab-grid-container">
-          <!-- Dynamically populated 6 cards for active lesson -->
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- ONBOARDING MODAL ("Who is learning today?") -->
-  <div class="modal-overlay" id="onboard-modal" role="dialog" aria-modal="true" aria-labelledby="onboard-title">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title" id="onboard-title">👋 Welcome to Korean Buddy!</h3>
-      </div>
-      <p style="font-size:0.95rem; color:#64748b;">Choose an avatar and name to start tracking your progress across 10 lessons.</p>
-      
-      <form id="onboard-profile-form">
-        <div class="form-group">
-          <label class="form-label" for="onboard-name-input">Your Name or Nickname</label>
-          <input type="text" id="onboard-name-input" class="text-input" placeholder="e.g. Alex" maxlength="20" autofocus autocomplete="off">
-        </div>
-
-        <div class="form-group">
-          <span class="form-label">Pick Your Avatar</span>
-          <div class="avatar-selector" id="onboard-avatar-options">
-            <!-- Avatars injected dynamically -->
-          </div>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
-          <button type="submit" class="btn-primary">
-            <span>✨</span> Start Learning
-          </button>
-          <button type="button" class="btn-secondary" id="onboard-guest-btn">
-            Quick Start as Guest
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- PROFILE SWITCHER MODAL -->
-  <div class="modal-overlay" id="profile-switcher-modal" role="dialog" aria-modal="true" aria-labelledby="switcher-title">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title" id="switcher-title">👤 Profiles & Learners</h3>
-        <button class="modal-close-btn" onclick="App.UIController.closeModal('profile-switcher-modal')" aria-label="Close modal">✕</button>
-      </div>
-
-      <div class="profiles-list" id="profile-switcher-list">
-        <!-- Rendered dynamically -->
-      </div>
-
-      <button type="button" class="btn-secondary" id="open-create-profile-btn" style="margin-top:4px;">
-        <span>➕</span> Add Another Learner
-      </button>
-    </div>
-  </div>
-
-  <!-- TOAST NOTIFICATION -->
-  <div class="toast-msg" id="toast-notification" role="status" aria-live="polite"></div>
-
-  <!-- SCRIPTS -->
-  <script src="vendor/dicebear-voxel.js"></script>
-  <script src="js/avatar.js"></script>
-  <script src="js/lessons-data.js"></script>
-  <script src="js/app.js"></script>
+      <a class="hub-card teacher" href="/teacher/">
+        <div class="card-icon">👩‍🏫</div>
+        <div class="card-title">Home Tutor Roleplay</div>
+        <p class="card-desc">
+          Customize your voxel avatar and robot companion, walk around your house, and practice a 20-beat lesson with Teacher Park.
+        </p>
+        <span class="card-cta">Meet Teacher Park →</span>
+      </a>
+    </section>
+  </main>
 </body>
 </html>
