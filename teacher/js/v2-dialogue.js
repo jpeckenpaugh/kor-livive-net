@@ -146,12 +146,28 @@
         this.populateVoices();
       }
       const prefix = langPrefix.toLowerCase();
-      // Prefer local voice first
-      const localMatch = this.voices.find(v => v.lang.toLowerCase().startsWith(prefix) && v.localService);
+      const matches = this.voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+      if (matches.length === 0) return null;
+
+      if (prefix.startsWith('ko')) {
+        const priorities = [
+          v => v.name.includes('Google'),
+          v => v.name.includes('Sora'),
+          v => v.name.includes('Yuna') && v.name.includes('Enhanced'),
+          v => v.name.includes('Yuna'),
+          v => !v.localService
+        ];
+        for (const match of priorities) {
+          const found = matches.find(match);
+          if (found) return found;
+        }
+        return matches[0];
+      }
+
+      // Prefer local voice first for non-Korean languages
+      const localMatch = matches.find(v => v.localService);
       if (localMatch) return localMatch;
-      const anyMatch = this.voices.find(v => v.lang.toLowerCase().startsWith(prefix));
-      if (anyMatch) return anyMatch;
-      return null;
+      return matches[0];
     },
 
     stop: function () {
