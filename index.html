@@ -86,7 +86,7 @@
 
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 24px;
       width: 100%;
     }
@@ -188,6 +188,13 @@
     </header>
 
     <section class="cards-grid">
+      <a class="hub-card basics" href="/basics/">
+        <span class="card-badge">Start Here</span>
+        <div class="card-title">Korean Basics</div>
+        <p class="card-desc">Zero Korean? Tap to hear Hangul letters, blend syllables, count 1–10, and learn your first words.</p>
+        <span class="card-cta" style="color: #34d399;">Open Basics &rarr;</span>
+      </a>
+
       <a class="hub-card lessons" href="/lessons/">
         <div class="card-icon">📚</div>
         <div class="card-title">Lessons &amp; Practice</div>

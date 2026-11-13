@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Korean Basics — Hangul, Numbers &amp; First Words</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <link rel="stylesheet" href="css/basics.css" />
+</head>
+<body>
+  <div class="basics-shell">
+    <header class="basics-header">
+      <div class="header-top">
+        <a class="back-link" href="../">&larr; Home</a>
+        <div class="brand-badge">Beginner Foundations</div>
+      </div>
+      <h1>Korean Basics</h1>
+      <p class="subtitle">Start from zero: tap to hear Hangul letters, blend syllables, count to 10, and learn your first words.</p>
+    </header>
+
+    <nav class="tab-bar" role="tablist" aria-label="Basics sections">
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="alphabet">
+        <span class="tab-icon">ㄱ</span>
+        <span class="tab-label">Alphabet</span>
+      </button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="builder">
+        <span class="tab-icon">가</span>
+        <span class="tab-label">Syllable Builder</span>
+      </button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="numbers">
+        <span class="tab-icon">1·2</span>
+        <span class="tab-label">Numbers 1–10</span>
+      </button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="words">
+        <span class="tab-icon">물</span>
+        <span class="tab-label">First Words</span>
+      </button>
+    </nav>
+
+    <main class="tab-panels">
+      <!-- TAB 1: ALPHABET -->
+      <section id="panel-alphabet" class="tab-panel active" role="tabpanel">
+        <div class="panel-intro">
+          <h2>Hangul Soundboard</h2>
+          <p>Tap any letter to hear its Korean sound. Consonants are shaped like the tongue or mouth when you say them.</p>
+        </div>
+
+        <div class="soundboard-group">
+          <h3>14 Basic Consonants <span class="group-hint">(자음)</span></h3>
+          <div id="consonants-grid" class="letter-grid"></div>
+        </div>
+
+        <div class="soundboard-group">
+          <h3>10 Basic Vowels <span class="group-hint">(모음)</span></h3>
+          <div id="vowels-grid" class="letter-grid"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SYLLABLE BUILDER -->
+      <section id="panel-builder" class="tab-panel" role="tabpanel" hidden>
+        <div class="panel-intro">
+          <h2>Syllable Builder</h2>
+          <p>Korean letters stack into syllable blocks. Pick 1 consonant + 1 vowel to build and hear a syllable.</p>
+        </div>
+
+        <div class="builder-stage">
+          <div class="builder-formula">
+            <div class="slot-box" id="slot-consonant">ㄱ</div>
+            <span class="plus-sign">+</span>
+            <div class="slot-box" id="slot-vowel">ㅏ</div>
+            <span class="equals-sign">=</span>
+            <button class="result-syllable-btn" id="builder-result-btn" type="button" title="Tap to hear syllable">
+              <span id="builder-result-char">가</span>
+              <span class="result-roman" id="builder-result-roman">ga</span>
+              <span class="speak-pill">&#x1F50A; Tap to hear</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-pickers">
+          <div class="picker-col">
+            <h3>1. Pick a Consonant</h3>
+            <div id="builder-consonants" class="picker-grid"></div>
+          </div>
+          <div class="picker-col">
+            <h3>2. Pick a Vowel</h3>
+            <div id="builder-vowels" class="picker-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: NUMBERS 1-10 -->
+      <section id="panel-numbers" class="tab-panel" role="tabpanel" hidden>
+        <div class="panel-intro">
+          <h2>Numbers 1–10</h2>
+          <p>Korean uses two number systems depending on what you are counting. Toggle between them and tap any card to hear it.</p>
+        </div>
+
+        <div class="system-toggle" role="group" aria-label="Number system">
+          <button class="sys-btn active" data-system="native" type="button">Native Korean (하나, 둘…)</button>
+          <button class="sys-btn" data-system="sino" type="button">Sino-Korean (일, 이…)</button>
+        </div>
+
+        <div id="system-note" class="system-note">
+          <strong>Native Korean</strong> is used for counting objects, people, and age (e.g., 2 apples, 5 years old).
+        </div>
+
+        <div id="numbers-grid" class="numbers-grid"></div>
+      </section>
+
+      <!-- TAB 4: FIRST WORDS & MINI-GAME -->
+      <section id="panel-words" class="tab-panel" role="tabpanel" hidden>
+        <div class="panel-intro">
+          <h2>First Words</h2>
+          <p>Essential 1-word building blocks. Tap any card to hear it, then test your ear below.</p>
+        </div>
+
+        <div id="words-grid" class="words-grid"></div>
+
+        <div class="quiz-box">
+          <div class="quiz-header">
+            <div>
+              <h3>Sound-to-Symbol Mini-Game</h3>
+              <p>Listen to the word and tap the matching Korean card.</p>
+            </div>
+            <div class="quiz-score">Score: <span id="quiz-score">0</span></div>
+          </div>
+
+          <div class="quiz-controls">
+            <button id="quiz-play-btn" class="quiz-play-btn" type="button">&#x1F50A; Play Sound</button>
+            <span id="quiz-feedback" class="quiz-feedback" aria-live="polite"></span>
+          </div>
+
+          <div id="quiz-options" class="quiz-options"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/basics.js"></script>
+</body>
+</html>
