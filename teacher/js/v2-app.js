@@ -616,6 +616,49 @@
 
   // Launch when DOM is ready
   window.addEventListener('DOMContentLoaded', () => {
-    new V2App();
+    const app = new V2App();
+
+    // Floating banner for interactive yard color items
+    let bannerTimer = null;
+    window.addEventListener('color-item-step', (e) => {
+      const item = e.detail;
+      if (!item) return;
+      let banner = document.getElementById('color-item-banner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'color-item-banner';
+        banner.style.cssText = [
+          'position: fixed',
+          'bottom: 84px',
+          'left: 50%',
+          'transform: translateX(-50%)',
+          'background: rgba(15, 23, 42, 0.94)',
+          'color: #f8fafc',
+          'border: 2px solid #38bdf8',
+          'border-radius: 14px',
+          'padding: 12px 18px',
+          'z-index: 1200',
+          'text-align: center',
+          'box-shadow: 0 10px 25px rgba(0,0,0,0.4)',
+          'max-width: 90vw',
+          'pointer-events: none',
+          'transition: opacity 0.2s'
+        ].join(';');
+        document.body.appendChild(banner);
+      }
+      banner.style.borderColor = item.colorHex;
+      banner.innerHTML = `
+        <div style="font-size:1.15rem;font-weight:700;">${item.emoji} ${item.ko}</div>
+        <div style="font-size:0.85rem;color:#94a3b8;margin-top:2px;">${item.colorKo} &bull; ${item.en}</div>
+      `;
+      banner.style.opacity = '1';
+      if (window.DualTTS && typeof window.DualTTS.speak === 'function') {
+        window.DualTTS.speak(item.ko, 'ko-KR', { rate: 0.88 });
+      }
+      clearTimeout(bannerTimer);
+      bannerTimer = setTimeout(() => {
+        if (banner) banner.style.opacity = '0';
+      }, 3600);
+    });
   });
 })();

@@ -753,6 +753,18 @@
       this.botSvg = null;
       this.initNpcAvatars();
 
+      // Interactive Color Items in the yard around spawn
+      const sx = data.spawn.x * TILE + TILE / 2;
+      const sy = data.spawn.y * TILE + TILE / 2;
+      this.colorItems = [
+        { id: 'red-mushroom', emoji: '🍄', colorHex: '#ef4444', colorKo: '빨간색', ko: '버섯은 빨간색이에요.', en: 'The mushroom is red.', x: sx - 110, y: sy + 30, lastTriggered: 0 },
+        { id: 'yellow-lemon', emoji: '🍋', colorHex: '#eab308', colorKo: '노란색', ko: '레몬은 노란색이에요.', en: 'The lemon is yellow.', x: sx + 120, y: sy + 20, lastTriggered: 0 },
+        { id: 'blue-flower', emoji: '💠', colorHex: '#3b82f6', colorKo: '파란색', ko: '꽃은 파란색이에요.', en: 'The flower is blue.', x: sx - 150, y: sy - 70, lastTriggered: 0 },
+        { id: 'green-leaf', emoji: '🍀', colorHex: '#22c55e', colorKo: '초록색', ko: '나뭇잎은 초록색이에요.', en: 'The leaf is green.', x: sx + 150, y: sy - 65, lastTriggered: 0 },
+        { id: 'white-stone', emoji: '⚪', colorHex: '#f8fafc', colorKo: '흰색', ko: '이 돌은 흰색이에요.', en: 'This stone is white.', x: sx - 70, y: sy + 95, lastTriggered: 0 },
+        { id: 'black-pebble', emoji: '⚫', colorHex: '#1e293b', colorKo: '검은색', ko: '이것은 검은색이에요.', en: 'This is black.', x: sx + 75, y: sy + 95, lastTriggered: 0 }
+      ];
+
       // Camera
       this.camera = {
         x: this.player.x,
@@ -1137,6 +1149,18 @@
         this.player.walkT = 0;
       }
 
+      // 1b. Interactive Color Items proximity check
+      if (this.colorItems && this.colorItems.length) {
+        const now = Date.now();
+        for (const item of this.colorItems) {
+          const dist = Math.hypot(this.player.x - item.x, this.player.y - item.y);
+          if (dist < 34 && now - item.lastTriggered > 4500) {
+            item.lastTriggered = now;
+            window.dispatchEvent(new CustomEvent('color-item-step', { detail: item }));
+          }
+        }
+      }
+
       // 2. Bot Companion Follow Logic
       const followDist = 42;
       let targetX = this.player.x;
@@ -1260,6 +1284,31 @@
       ctx.drawImage(img, footX - width / 2, footY - height + bottomTrim, width, height);
     }
 
+    drawColorItems(ctx) {
+      if (!this.colorItems) return;
+      const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 320);
+      for (const item of this.colorItems) {
+        ctx.save();
+        // Subtle glowing ring
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, 18, 0, Math.PI * 2);
+        ctx.fillStyle = item.colorHex + '33';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = item.colorHex;
+        ctx.globalAlpha = pulse;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Emoji icon
+        ctx.font = '22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.emoji, item.x, item.y);
+        ctx.restore();
+      }
+    }
+
     render() {
       const ctx = this.ctx;
       const w = this.canvas.width;
@@ -1276,6 +1325,7 @@
       const camX = Math.round(w / 2 - this.camera.x);
       const camY = Math.round(h / 2 - this.camera.y);
       ctx.translate(camX, camY);
+      this.drawColorItems(ctx);
 
       // Camera view culling bounds in tile coordinates
       const minTileX = Math.max(0, Math.floor((this.camera.x - w / 2) / TILE) - 2);
